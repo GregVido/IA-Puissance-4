@@ -8,6 +8,6 @@ class MinMaxIA : public IA
 {
 public:
 	Move getMove(Board board, Box player) override;
-	int minmax(Board board, int depth, bool maximizingPlayer, Box player);
+	int minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
 	int evalutate(Board board, Box player);
 };

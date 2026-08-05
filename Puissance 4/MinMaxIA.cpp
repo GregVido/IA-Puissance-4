@@ -22,7 +22,7 @@ Move MinMaxIA::getMove(Board board, Box player)
 			currentMove.box = player;
 			newBoard.play(currentMove);
 
-			int moveValue = minmax(newBoard, DEPTH, false, player);
+			int moveValue = minmax(newBoard, DEPTH, false, -1000000, 1000000, player);
 
 			if (moveValue > bestValue)
 			{
@@ -38,7 +38,7 @@ Move MinMaxIA::getMove(Board board, Box player)
 	return move;
 }
 
-int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, Box player)
+int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
 {
 	if (depth == 0 || board.getWinner() != Box::EMPTY || board.isFull())
 		return evalutate(board, player);
@@ -52,8 +52,11 @@ int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, Box player)
 				Move move = Move(newBoard.currentPlayer, i);
 				newBoard.play(move);
 				newBoard.next();
-				int eval = minmax(newBoard, depth - 1, false, player);
+				int eval = minmax(newBoard, depth - 1, false, alpha, beta, player);
 				maxEval = std::max(maxEval, eval);
+				alpha = std::max(alpha, eval);
+				if (beta <= alpha)
+					break;
 			}
 		}
 
@@ -68,8 +71,11 @@ int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, Box player)
 			Move move = Move(newBoard.currentPlayer, i);
 			newBoard.play(move);
 			newBoard.next();
-			int eval = minmax(newBoard, depth - 1, true, player);
+			int eval = minmax(newBoard, depth - 1, true, alpha, beta, player);
 			minEval = std::min(minEval, eval);
+			beta = std::min(beta, eval);
+			if (beta <= alpha)
+				break;
 		}
 	}
 
