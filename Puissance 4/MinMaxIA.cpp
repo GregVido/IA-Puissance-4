@@ -9,7 +9,7 @@ Move MinMaxIA::getMove(Board board, Box player)
 {
 	std::vector<Move> moves = board.getAllMoves();
 
-	int bestMove = -1;
+	std::vector<Move> bestMove;
 	int bestValue = -1000000;
 
 	for (int move = 0; move < moves.size(); move++)
@@ -27,15 +27,12 @@ Move MinMaxIA::getMove(Board board, Box player)
 			if (moveValue > bestValue)
 			{
 				bestValue = moveValue;
-				bestMove = currentMove.column;
+				bestMove.push_back(currentMove);
 			}
 		}
 	}
 
-	Move move;
-	move.box = player;
-	move.column = bestMove;
-	return move;
+	return bestMove[rand() % bestMove.size()];
 }
 
 int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
