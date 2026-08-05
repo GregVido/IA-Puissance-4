@@ -40,7 +40,6 @@ Move MinMaxIA::getMove(Board board, Box player)
 
 int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, Box player)
 {
-	if (depth == 0 || board.getWinner() != Box::EMPTY || board.isFull())
 		return evalutate(board, player);
 
 	if (maximizingPlayer) {
