@@ -3,6 +3,7 @@
 #include <vector>
 #include "Box.h"
 #include "Move.h"
+#include <array>
 
 #define WIDTH 7
 #define HEIGHT 6
@@ -10,20 +11,20 @@
 class Board
 {
 private:
-	std::vector<std::vector<Box>> grid;
+	std::array<Box, WIDTH* HEIGHT> grid;
 
 public:
 	Box currentPlayer;
 
 	Board();
 	void play(Move move);
-	bool isColumnFull(int column);
-	std::vector<Move> getAllMoves();
-	bool isFull();
-	Box getWinner();
+	bool isColumnFull(int column) const;
+	std::vector<Move> getAllMoves() const;
+	bool isFull() const;
+	Box getWinner() const;
 	void next();
-	Board duplicate();
-	void draw();
+	Board duplicate() const;
+	void draw() const;
 };
 
 	

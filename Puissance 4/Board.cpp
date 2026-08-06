@@ -4,78 +4,85 @@
 #include <iostream>
 
 Board::Board()
-	: grid(HEIGHT, std::vector<Box>(WIDTH, Box::EMPTY)), currentPlayer(Box::RED)
+	: currentPlayer(Box::RED)
 {
+	grid.fill(Box::EMPTY);
 }
 
 void Board::play(Move move)
 {
-	int column = move.column;
-	Box player = move.box;
+	const int column = move.column;
+	const Box player = move.box;
 
-	if (!isColumnFull(column)) {
-		for (int i = HEIGHT - 1; i >= 0; i--)
+	if (column < 0 || column >= WIDTH)
+		return;
+
+	if (isColumnFull(column))
+		return;
+
+	for (int row = HEIGHT - 1; row >= 0; row--)
+	{
+		const int index = row * WIDTH + column;
+
+		if (grid[index] == Box::EMPTY)
 		{
-			if (grid[i][column] == Box::EMPTY)
-			{
-				grid[i][column] = player;
-				break;
-			}
+			grid[index] = player;
+			break;
 		}
 	}
 }
 
-bool Board::isColumnFull(int column)
+bool Board::isColumnFull(int column) const
 {
-	int nbBox = 0;
+	if (column < 0 || column >= WIDTH)
+		return true;
 
-	for (int i = 0; i < HEIGHT; i++)
-	{
-		if (grid[i][column] != Box::EMPTY)
-			nbBox++;
-	}
-	return nbBox == HEIGHT;
+	// La colonne est pleine si sa case la plus haute est occupée
+	return grid[column] != Box::EMPTY;
 }
 
-std::vector<Move> Board::getAllMoves()
+std::vector<Move> Board::getAllMoves() const
 {
 	std::vector<Move> moves;
-	for (int j = 0; j < WIDTH; j++)
+	moves.reserve(WIDTH);
+
+	for (int column = 0; column < WIDTH; column++)
 	{
-		if (!isColumnFull(j))
+		if (!isColumnFull(column))
 		{
-			Move move = Move(Box::EMPTY, j);
-			moves.push_back(move);
+			moves.emplace_back(Box::EMPTY, column);
 		}
 	}
+
 	return moves;
 }
 
-bool Board::isFull()
+bool Board::isFull() const
 {
-	std::vector<Box> line = grid[0];
-	for (int col = 0; col < line.size(); col++)
+	// Seule la première ligne doit être vérifiée
+	for (int column = 0; column < WIDTH; column++)
 	{
-		if (line[col] == Box::EMPTY)
+		if (grid[column] == Box::EMPTY)
 			return false;
 	}
+
 	return true;
 }
 
-Box Board::getWinner()
+Box Board::getWinner() const
 {
-	const int directions[4][2] = {
-		{0, 1},
-		{1, 0},
-		{1, 1},
-		{1, -1}
+	constexpr int directions[4][2] = {
+		{0, 1},  // Horizontal
+		{1, 0},  // Vertical
+		{1, 1},  // Diagonale descendante droite
+		{1, -1}  // Diagonale descendante gauche
 	};
 
 	for (int row = 0; row < HEIGHT; row++)
 	{
-		for (int col = 0; col < WIDTH; col++)
+		for (int column = 0; column < WIDTH; column++)
 		{
-			const Box player = grid[row][col];
+			const Box player = grid[row * WIDTH + column];
 
 			if (player == Box::EMPTY)
 				continue;
@@ -83,23 +90,29 @@ Box Board::getWinner()
 			for (const auto& direction : directions)
 			{
 				const int rowDirection = direction[0];
-				const int colDirection = direction[1];
+				const int columnDirection = direction[1];
 
 				bool hasWon = true;
 
-				for (int i = 1; i < 4; i++)
+				for (int offset = 1; offset < 4; offset++)
 				{
-					const int nextRow = row + rowDirection * i;
-					const int nextCol = col + colDirection * i;
+					const int nextRow =
+						row + rowDirection * offset;
+
+					const int nextColumn =
+						column + columnDirection * offset;
 
 					if (nextRow < 0 || nextRow >= HEIGHT ||
-						nextCol < 0 || nextCol >= WIDTH)
+						nextColumn < 0 || nextColumn >= WIDTH)
 					{
 						hasWon = false;
 						break;
 					}
 
-					if (grid[nextRow][nextCol] != player)
+					const int nextIndex =
+						nextRow * WIDTH + nextColumn;
+
+					if (grid[nextIndex] != player)
 					{
 						hasWon = false;
 						break;
@@ -123,44 +136,55 @@ void Board::next()
 		currentPlayer = Box::RED;
 }
 
-Board Board::duplicate()
+Board Board::duplicate() const
 {
-	Board newBoard;
-	newBoard.grid = grid;
-	newBoard.currentPlayer = currentPlayer;
-	return newBoard;
+	return *this;
 }
 
-void Board::draw() {
-	for (int row = 0; row < grid.size(); row++) {
-		for (int col = 0; col < grid[row].size() * 2; col++) {
-			std::cout << "- ";
-		}
+void Board::draw() const
+{
+	for (int row = 0; row < HEIGHT; row++)
+	{
+		for (int column = 0; column < WIDTH; column++)
+			std::cout << "----";
 
-		std::cout << "-";
-		std::cout << std::endl;
+		std::cout << "-" << std::endl;
 		std::cout << "| ";
 
-		for (int col = 0; col < grid[row].size(); col++) {
-			switch (grid[row][col]) {
+		for (int column = 0; column < WIDTH; column++)
+		{
+			const Box box = grid[row * WIDTH + column];
+
+			switch (box)
+			{
 			case Box::EMPTY:
 				std::cout << ".";
 				break;
+
 			case Box::RED:
 				std::cout << "R";
 				break;
+
 			case Box::YELLOW:
 				std::cout << "Y";
 				break;
 			}
+
 			std::cout << " | ";
 		}
+
 		std::cout << std::endl;
 	}
 
-	for (int col = 0; col < grid[0].size() * 2; col++)
-		std::cout << "- ";
+	for (int column = 0; column < WIDTH; column++)
+		std::cout << "----";
 
-	std::cout << "-";
+	std::cout << "-" << std::endl;
+
+	std::cout << "  ";
+
+	for (int column = 0; column < WIDTH; column++)
+		std::cout << column << "   ";
+
 	std::cout << std::endl;
 }

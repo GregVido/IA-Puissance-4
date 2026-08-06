@@ -16,6 +16,6 @@ public:
 	Move getMove(Board board, Box player) override;
 
 private:
-	static int minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
-	static int evalutate(Board board, Box player);
+	static int minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
+	static int evalutate(const Board& board, Box player, Box winner);
 };

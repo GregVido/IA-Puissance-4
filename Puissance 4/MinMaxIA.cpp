@@ -9,7 +9,7 @@
 #include <random>
 #include <vector>
 
-#define DEPTH 8
+#define DEPTH 10
 
 Move MinMaxIA::getMove(Board board, Box player)
 {
@@ -29,15 +29,13 @@ Move MinMaxIA::getMove(Board board, Box player)
 		futures.push_back(
 			std::async(
 				std::launch::async,
-				[board, currentMove, player]() mutable -> MoveResult
+				[localBoard = board, currentMove, player]() mutable -> MoveResult
 				{
-					Board newBoard = board.duplicate();
+					localBoard.play(currentMove);
+					localBoard.next();
 
-					newBoard.play(currentMove);
-					newBoard.next();
-
-					int moveValue = minmax(
-						newBoard,
+					const int moveValue = MinMaxIA::minmax(
+						localBoard,
 						DEPTH - 1,
 						false,
 						-1000000,
@@ -45,7 +43,7 @@ Move MinMaxIA::getMove(Board board, Box player)
 						player
 					);
 
-					return MoveResult{
+					return {
 						currentMove,
 						moveValue
 					};
@@ -85,10 +83,12 @@ Move MinMaxIA::getMove(Board board, Box player)
 	return bestMoves[distribution(generator)];
 }
 
-int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
+int MinMaxIA::minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
 {
-	if (depth == 0 || board.getWinner() != Box::EMPTY || board.isFull())
-		return evalutate(board, player);
+	Box winner = board.getWinner();
+
+	if (depth == 0 || winner != Box::EMPTY || board.isFull())
+		return evalutate(board, player, winner);
 
 	if (maximizingPlayer) {
 		int maxEval = -1000000;
@@ -129,10 +129,8 @@ int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, int alpha, i
 	return minEval;
 }
 
-int MinMaxIA::evalutate(Board board, Box player)
+int MinMaxIA::evalutate(const Board& board, Box player, Box winner)
 {
-	Box winner = board.getWinner();
-
 	if (winner == player)
 		return 10000;
 
