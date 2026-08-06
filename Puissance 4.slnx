@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Puissance 4/Puissance 4.vcxproj" />
+  <Project Path="Puissance 4/Puissance 4.vcxproj" Id="ef044570-08a3-439b-a2b1-347415f50013" />
 </Solution>

@@ -3,7 +3,7 @@
 #include "Box.h"
 #include "Move.h"
 
-#define DEPTH 5
+#define DEPTH 7
 
 Move MinMaxIA::getMove(Board board, Box player)
 {
