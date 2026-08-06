@@ -137,5 +137,8 @@ int MinMaxIA::evalutate(const Board& board, Box player, Box winner)
 	else if (winner != Box::EMPTY)
 		return -10000;
 
+	if (board.isColumnFull(3))
+		return 50;
+
 	return 0;
 }
