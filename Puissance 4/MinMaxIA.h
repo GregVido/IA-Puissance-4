@@ -4,10 +4,18 @@
 #include "IA.h"
 #include "Board.h"
 
+struct MoveResult
+{
+	Move move;
+	int value;
+};
+
 class MinMaxIA : public IA
 {
 public:
 	Move getMove(Board board, Box player) override;
-	int minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
-	int evalutate(Board board, Box player);
+
+private:
+	static int minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
+	static int evalutate(Board board, Box player);
 };

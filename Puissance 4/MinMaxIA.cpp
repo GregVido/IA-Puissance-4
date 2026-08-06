@@ -3,36 +3,86 @@
 #include "Box.h"
 #include "Move.h"
 
-#define DEPTH 7
+#include <algorithm>
+#include <future>
+#include <limits>
+#include <random>
+#include <vector>
+
+#define DEPTH 8
 
 Move MinMaxIA::getMove(Board board, Box player)
 {
+
 	std::vector<Move> moves = board.getAllMoves();
 
-	std::vector<Move> bestMove;
-	int bestValue = -1000000;
+	if (moves.empty())
+		return Move(Box::EMPTY, -1);
 
-	for (int move = 0; move < moves.size(); move++)
+	std::vector<std::future<MoveResult>> futures;
+	futures.reserve(moves.size());
+
+	for (Move currentMove : moves)
 	{
-		Move currentMove = moves[move];
-		if (currentMove.box == Box::EMPTY)
+		currentMove.box = player;
+
+		futures.push_back(
+			std::async(
+				std::launch::async,
+				[board, currentMove, player]() mutable -> MoveResult
+				{
+					Board newBoard = board.duplicate();
+
+					newBoard.play(currentMove);
+					newBoard.next();
+
+					int moveValue = minmax(
+						newBoard,
+						DEPTH - 1,
+						false,
+						-1000000,
+						1000000,
+						player
+					);
+
+					return MoveResult{
+						currentMove,
+						moveValue
+					};
+				}
+			)
+		);
+	}
+
+	int bestValue = std::numeric_limits<int>::min();
+	std::vector<Move> bestMoves;
+
+	for (std::future<MoveResult>& future : futures)
+	{
+		MoveResult result = future.get();
+
+		if (result.value > bestValue)
 		{
-			Board newBoard = board.duplicate();
-
-			currentMove.box = player;
-			newBoard.play(currentMove);
-
-			int moveValue = minmax(newBoard, DEPTH, false, -1000000, 1000000, player);
-
-			if (moveValue > bestValue)
-			{
-				bestValue = moveValue;
-				bestMove.push_back(currentMove);
-			}
+			bestValue = result.value;
+			bestMoves.clear();
+			bestMoves.push_back(result.move);
+		}
+		else if (result.value == bestValue)
+		{
+			bestMoves.push_back(result.move);
 		}
 	}
 
-	return bestMove[rand() % bestMove.size()];
+	static thread_local std::mt19937 generator(
+		std::random_device{}()
+	);
+
+	std::uniform_int_distribution<std::size_t> distribution(
+		0,
+		bestMoves.size() - 1
+	);
+
+	return bestMoves[distribution(generator)];
 }
 
 int MinMaxIA::minmax(Board board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
@@ -84,10 +134,10 @@ int MinMaxIA::evalutate(Board board, Box player)
 	Box winner = board.getWinner();
 
 	if (winner == player)
-		return 1000;
+		return 10000;
 
 	else if (winner != Box::EMPTY)
-		return -1000;
+		return -10000;
 
 	return 0;
 }
