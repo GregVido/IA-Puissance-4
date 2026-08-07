@@ -85,10 +85,10 @@ Move BestMinMax::getMove(Board board, Box player)
 
 int BestMinMax::minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
 {
-	Box winner = board.getWinner();
+	GameState gameState = board.getGameState();
 
-	if (depth == 0 || winner != Box::EMPTY || board.isFull())
-		return evalutate(board, player, winner);
+	if (depth == 0 || gameState.winner != Box::EMPTY || board.isFull())
+		return evalutate(board, gameState, board.currentPlayer);
 
 	if (maximizingPlayer) {
 		int maxEval = -1000000;
@@ -129,13 +129,13 @@ int BestMinMax::minmax(const Board& board, int depth, bool maximizingPlayer, int
 	return minEval;
 }
 
-int BestMinMax::evalutate(const Board& board, Box player, Box winner)
+int BestMinMax::evalutate(const Board& board, GameState gameState, Box player)
 {
-	if (winner == player)
-		return 10000;
+	if (player == gameState.winner)
+		return 50000;
 
-	else if (winner != Box::EMPTY)
-		return -10000;
+	else if (gameState.winner != Box::EMPTY)
+		return -50000;
 
-	return 0;
+	return gameState.nb3Token * 1000 + gameState.nb2Token * 100;
 }

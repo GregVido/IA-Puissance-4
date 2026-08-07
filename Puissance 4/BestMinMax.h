@@ -4,6 +4,7 @@
 #include "IA.h"
 #include "Board.h"
 #include "MoveResult.h"
+#include "GameState.h"
 
 class BestMinMax : public IA
 {
@@ -12,5 +13,5 @@ public:
 
 private:
 	static int minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
-	static int evalutate(const Board& board, Box player, Box winner);
+	static int evalutate(const Board& board, GameState gameState, Box player);
 };
