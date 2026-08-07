@@ -139,6 +139,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BestMinMax.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="IA.cpp" />
     <ClCompile Include="MinMaxIA.cpp" />
@@ -146,11 +147,13 @@
     <ClCompile Include="RandomIA.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BestMinMax.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Box.h" />
     <ClInclude Include="IA.h" />
     <ClInclude Include="MinMaxIA.h" />
     <ClInclude Include="Move.h" />
+    <ClInclude Include="MoveResult.h" />
     <ClInclude Include="RandomIA.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

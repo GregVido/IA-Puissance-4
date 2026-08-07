@@ -5,7 +5,7 @@
 #include "Board.h"
 #include "MoveResult.h"
 
-class MinMaxIA : public IA
+class BestMinMax : public IA
 {
 public:
 	Move getMove(Board board, Box player) override;

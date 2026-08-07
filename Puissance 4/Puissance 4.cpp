@@ -3,6 +3,7 @@
 #include "Board.h"
 #include "RandomIA.h"
 #include "MinMaxIA.h"
+#include "BestMinMax.h"
 #include "IA.h"
 
 int main()
@@ -17,7 +18,7 @@ int main()
 		std::unique_ptr<IA> ia;
 
 		if (board.currentPlayer == Box::YELLOW)
-			ia = std::make_unique<MinMaxIA>();
+			ia = std::make_unique<BestMinMax>();
 
 		else
 			ia = std::make_unique<MinMaxIA>();
