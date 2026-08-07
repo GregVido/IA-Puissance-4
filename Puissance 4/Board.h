@@ -25,6 +25,7 @@ public:
 	Box getWinner() const;
 	GameState getGameState() const;
 	void next();
+	Box getCell(int row, int column) const;
 	Board duplicate() const;
 	void draw() const;
 };

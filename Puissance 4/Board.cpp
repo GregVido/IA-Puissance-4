@@ -206,6 +206,11 @@ void Board::next()
 		currentPlayer = Box::RED;
 }
 
+Box Board::getCell(int row, int column) const
+{
+	return grid[row * WIDTH + column];
+}
+
 Board Board::duplicate() const
 {
 	return *this;

@@ -13,5 +13,5 @@ public:
 
 private:
 	static int minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player);
-	static int evalutate(const Board& board, GameState gameState, Box player);
+	static int evalutate(const Board& board, Box player);
 };

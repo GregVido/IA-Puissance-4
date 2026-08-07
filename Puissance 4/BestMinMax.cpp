@@ -85,10 +85,22 @@ Move BestMinMax::getMove(Board board, Box player)
 
 int BestMinMax::minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
 {
-	GameState gameState = board.getGameState();
+	const Box winner = board.getWinner();
 
-	if (depth == 0 || gameState.winner != Box::EMPTY || board.isFull())
-		return evalutate(board, gameState, board.currentPlayer);
+	// Victoire IA
+	if (winner == player)
+		return 1000000 + depth;
+
+	// Victoire adversaire
+	if (winner != Box::EMPTY)
+		return -1000000 - depth;
+
+	// Match nul
+	if (board.isFull())
+		return 0;
+
+	if (depth == 0)
+		return evalutate(board, player);
 
 	if (maximizingPlayer) {
 		int maxEval = -1000000;
@@ -129,13 +141,217 @@ int BestMinMax::minmax(const Board& board, int depth, bool maximizingPlayer, int
 	return minEval;
 }
 
-int BestMinMax::evalutate(const Board& board, GameState gameState, Box player)
+int BestMinMax::evalutate(const Board& board, Box player)
 {
-	if (player == gameState.winner)
-		return 50000;
+	const Box opponent =
+		player == Box::RED
+		? Box::YELLOW
+		: Box::RED;
 
-	else if (gameState.winner != Box::EMPTY)
-		return -50000;
+	int score = 0;
 
-	return gameState.nb3Token * 1000 + gameState.nb2Token * 100;
+	int playerThreats = 0;
+	int opponentThreats = 0;
+
+	// --------------------------------------------------
+	// 1. Contrôle du centre
+	// --------------------------------------------------
+
+	const int centerColumn = WIDTH / 2;
+
+	for (int row = 0; row < HEIGHT; row++)
+	{
+		const Box cell = board.getCell(row, centerColumn);
+
+		if (cell == player)
+			score += 30;
+
+		else if (cell == opponent)
+			score -= 30;
+	}
+
+	// --------------------------------------------------
+	// Fonction qui vérifie si une case vide est jouable
+	// immédiatement (gravité du Puissance 4)
+	// --------------------------------------------------
+
+	auto isPlayable = [&](int row, int column)
+		{
+			if (board.getCell(row, column) != Box::EMPTY)
+				return false;
+
+			// Dernière ligne
+			if (row == HEIGHT - 1)
+				return true;
+
+			// Il faut un pion juste en dessous
+			return board.getCell(row + 1, column) != Box::EMPTY;
+		};
+
+	// --------------------------------------------------
+	// Évaluation d'une fenêtre de 4 cases
+	// --------------------------------------------------
+
+	auto evaluateWindow =
+		[&](int startRow, int startCol, int rowDir, int colDir)
+		{
+			int playerCount = 0;
+			int opponentCount = 0;
+			int emptyCount = 0;
+
+			int emptyRow = -1;
+			int emptyCol = -1;
+
+			for (int i = 0; i < 4; i++)
+			{
+				const int row = startRow + rowDir * i;
+				const int col = startCol + colDir * i;
+
+				const Box cell = board.getCell(row, col);
+
+				if (cell == player)
+				{
+					playerCount++;
+				}
+				else if (cell == opponent)
+				{
+					opponentCount++;
+				}
+				else
+				{
+					emptyCount++;
+					emptyRow = row;
+					emptyCol = col;
+				}
+			}
+
+			// Fenêtre bloquée :
+			// les deux joueurs sont présents
+			if (playerCount > 0 && opponentCount > 0)
+				return;
+
+			// ----------------------------------------------
+			// IA
+			// ----------------------------------------------
+
+			if (playerCount == 4)
+			{
+				score += 100000;
+			}
+			else if (playerCount == 3 && emptyCount == 1)
+			{
+				if (isPlayable(emptyRow, emptyCol))
+				{
+					score += 5000;
+					playerThreats++;
+				}
+				else
+				{
+					score += 500;
+				}
+			}
+			else if (playerCount == 2 && emptyCount == 2)
+			{
+				score += 100;
+			}
+			else if (playerCount == 1 && emptyCount == 3)
+			{
+				score += 5;
+			}
+
+			// ----------------------------------------------
+			// Adversaire
+			// ----------------------------------------------
+
+			if (opponentCount == 4)
+			{
+				score -= 100000;
+			}
+			else if (opponentCount == 3 && emptyCount == 1)
+			{
+				if (isPlayable(emptyRow, emptyCol))
+				{
+					// On pénalise légèrement plus que
+					// notre propre attaque :
+					// bloquer une victoire est prioritaire.
+					score -= 7000;
+					opponentThreats++;
+				}
+				else
+				{
+					score -= 700;
+				}
+			}
+			else if (opponentCount == 2 && emptyCount == 2)
+			{
+				score -= 150;
+			}
+			else if (opponentCount == 1 && emptyCount == 3)
+			{
+				score -= 5;
+			}
+		};
+
+	// ==================================================
+	// HORIZONTAL
+	// ==================================================
+
+	for (int row = 0; row < HEIGHT; row++)
+	{
+		for (int col = 0; col <= WIDTH - 4; col++)
+		{
+			evaluateWindow(row, col, 0, 1);
+		}
+	}
+
+	// ==================================================
+	// VERTICAL
+	// ==================================================
+
+	for (int row = 0; row <= HEIGHT - 4; row++)
+	{
+		for (int col = 0; col < WIDTH; col++)
+		{
+			evaluateWindow(row, col, 1, 0);
+		}
+	}
+
+	// ==================================================
+	// DIAGONALE \
+	// ==================================================
+
+	for (int row = 0; row <= HEIGHT - 4; row++)
+	{
+		for (int col = 0; col <= WIDTH - 4; col++)
+		{
+			evaluateWindow(row, col, 1, 1);
+		}
+	}
+
+	// ==================================================
+	// DIAGONALE /
+	// ==================================================
+
+	for (int row = 0; row <= HEIGHT - 4; row++)
+	{
+		for (int col = 3; col < WIDTH; col++)
+		{
+			evaluateWindow(row, col, 1, -1);
+		}
+	}
+
+	// --------------------------------------------------
+	// Double menace
+	//
+	// Deux façons différentes de gagner au prochain
+	// tour sont extrêmement fortes.
+	// --------------------------------------------------
+
+	if (playerThreats >= 2)
+		score += 20000;
+
+	if (opponentThreats >= 2)
+		score -= 25000;
+
+	return score;
 }
