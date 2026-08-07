@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="BestMinMax.cpp" />
     <ClCompile Include="Board.cpp" />
+    <ClCompile Include="GameState.h" />
     <ClCompile Include="IA.cpp" />
     <ClCompile Include="MinMaxIA.cpp" />
     <ClCompile Include="Puissance 4.cpp" />

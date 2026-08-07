@@ -4,6 +4,7 @@
 #include "Box.h"
 #include "Move.h"
 #include <array>
+#include "GameState.h"
 
 #define WIDTH 7
 #define HEIGHT 6
@@ -22,6 +23,7 @@ public:
 	std::vector<Move> getAllMoves() const;
 	bool isFull() const;
 	Box getWinner() const;
+	GameState getGameState() const;
 	void next();
 	Board duplicate() const;
 	void draw() const;
