@@ -11,6 +11,7 @@ int main()
 {
 	Board board;
 
+	// Evite de recreer/detruire les IA a chaque tour.
 	BestMinMax bestMinMax;
 	MinMaxIA minMax;
 
@@ -45,8 +46,8 @@ int main()
 		<< (winner == Box::RED
 			? "Rouge"
 			: winner == Box::YELLOW
-			? "Jaune"
-			: "Personne")
+				? "Jaune"
+				: "Personne")
 		<< '\n';
 
 	return 0;

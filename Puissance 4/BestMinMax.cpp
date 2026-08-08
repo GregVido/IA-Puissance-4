@@ -1,357 +1,445 @@
 #include "BestMinMax.h"
+
 #include "Board.h"
 #include "Box.h"
 #include "Move.h"
 
 #include <algorithm>
-#include <future>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <random>
-#include <vector>
 
-#define DEPTH 10
+namespace
+{
+	constexpr int DEPTH = 11;
+	constexpr int WIN_SCORE = 1'000'000;
+	constexpr int INF = 2'000'000;
+
+	// L'ordre des coups est capital pour l'efficacite de l'alpha-beta.
+	constexpr std::array<int, WIDTH> MOVE_ORDER = { 3, 2, 4, 1, 5, 0, 6 };
+
+	// Les 69 alignements possibles de 4 cases sur un plateau 7x6.
+	constexpr auto makeWindows()
+	{
+		std::array<std::array<int, 4>, 69> windows{};
+		std::size_t n = 0;
+
+		// Horizontal : 6 * 4 = 24
+		for (int row = 0; row < HEIGHT; ++row)
+		{
+			for (int col = 0; col <= WIDTH - 4; ++col)
+			{
+				for (int i = 0; i < 4; ++i)
+					windows[n][i] = row * WIDTH + col + i;
+
+				++n;
+			}
+		}
+
+		// Vertical : 3 * 7 = 21
+		for (int row = 0; row <= HEIGHT - 4; ++row)
+		{
+			for (int col = 0; col < WIDTH; ++col)
+			{
+				for (int i = 0; i < 4; ++i)
+					windows[n][i] = (row + i) * WIDTH + col;
+
+				++n;
+			}
+		}
+
+		// Diagonale \ : 3 * 4 = 12
+		for (int row = 0; row <= HEIGHT - 4; ++row)
+		{
+			for (int col = 0; col <= WIDTH - 4; ++col)
+			{
+				for (int i = 0; i < 4; ++i)
+					windows[n][i] = (row + i) * WIDTH + col + i;
+
+				++n;
+			}
+		}
+
+		// Diagonale / : 3 * 4 = 12
+		for (int row = 0; row <= HEIGHT - 4; ++row)
+		{
+			for (int col = 3; col < WIDTH; ++col)
+			{
+				for (int i = 0; i < 4; ++i)
+					windows[n][i] = (row + i) * WIDTH + col - i;
+
+				++n;
+			}
+		}
+
+		return windows;
+	}
+
+	constexpr auto WINDOWS = makeWindows();
+
+	inline std::uint64_t mix64(std::uint64_t x) noexcept
+	{
+		x ^= x >> 30;
+		x *= 0xbf58476d1ce4e5b9ULL;
+		x ^= x >> 27;
+		x *= 0x94d049bb133111ebULL;
+		x ^= x >> 31;
+		return x;
+	}
+}
+
+std::size_t BestMinMax::TTKeyHash::operator()(const TTKey& key) const noexcept
+{
+	std::uint64_t hash = mix64(key.red);
+	hash ^= mix64(key.yellow + 0x9e3779b97f4a7c15ULL);
+
+	if (key.redToMove)
+		hash ^= 0xd6e8feb86659fd93ULL;
+
+	return static_cast<std::size_t>(hash);
+}
+
+BestMinMax::TTKey BestMinMax::makeKey(const Board& board) noexcept
+{
+	return {
+		board.getRedBits(),
+		board.getYellowBits(),
+		board.currentPlayer == Box::RED
+	};
+}
 
 Move BestMinMax::getMove(Board board, Box player)
 {
-
-	std::vector<Move> moves = board.getAllMoves();
-
-	if (moves.empty())
+	if (board.isFull())
 		return Move(Box::EMPTY, -1);
 
-	std::vector<std::future<MoveResult>> futures;
-	futures.reserve(moves.size());
+	// On garde les buckets entre les tours, mais on supprime les anciennes
+	// evaluations car les scores sont calcules du point de vue de "player".
+	transpositionTable.clear();
 
-	for (Move currentMove : moves)
+	if (transpositionTable.bucket_count() < 200'000)
 	{
-		currentMove.box = player;
+		transpositionTable.max_load_factor(0.75f);
+		transpositionTable.reserve(200'000);
+	}
 
-		futures.push_back(
-			std::async(
-				std::launch::async,
-				[localBoard = board, currentMove, player]() mutable -> MoveResult
-				{
-					localBoard.play(currentMove);
-					localBoard.next();
+	int bestValue = -INF;
+	int bestColumn = -1;
+	int alpha = -INF;
 
-					const int moveValue = BestMinMax::minmax(
-						localBoard,
-						DEPTH - 1,
-						false,
-						-1000000,
-						1000000,
-						player
-					);
+	// Centre -> bords.
+	for (const int column : MOVE_ORDER)
+	{
+		if (board.isColumnFull(column))
+			continue;
 
-					return {
-						currentMove,
-						moveValue
-					};
-				}
-			)
+		if (!board.playColumn(column, player))
+			continue;
+
+		board.next();
+
+		const int value = minmax(
+			board,
+			DEPTH - 1,
+			alpha,
+			INF,
+			player
 		);
+
+		// Remet exactement le plateau dans son etat initial.
+		board.next();
+		board.undo();
+
+		if (value > bestValue)
+		{
+			bestValue = value;
+			bestColumn = column;
+		}
+
+		alpha = std::max(alpha, bestValue);
+
+		// On ne peut pas faire mieux qu'une victoire immediate.
+		if (bestValue >= WIN_SCORE - (board.getMoveCount() + 1))
+			break;
 	}
 
-	int bestValue = std::numeric_limits<int>::min();
-	std::vector<Move> bestMoves;
+	if (bestColumn == -1)
+		return Move(Box::EMPTY, -1);
 
-	for (std::future<MoveResult>& future : futures)
-	{
-		MoveResult result = future.get();
-
-		if (result.value > bestValue)
-		{
-			bestValue = result.value;
-			bestMoves.clear();
-			bestMoves.push_back(result.move);
-		}
-		else if (result.value == bestValue)
-		{
-			bestMoves.push_back(result.move);
-		}
-	}
-
-	static thread_local std::mt19937 generator(
-		std::random_device{}()
-	);
-
-	std::uniform_int_distribution<std::size_t> distribution(
-		0,
-		bestMoves.size() - 1
-	);
-
-	return bestMoves[distribution(generator)];
+	return Move(player, bestColumn);
 }
 
-int BestMinMax::minmax(const Board& board, int depth, bool maximizingPlayer, int alpha, int beta, Box player)
+int BestMinMax::minmax(
+	Board& board,
+	int depth,
+	int alpha,
+	int beta,
+	Box player
+)
 {
 	const Box winner = board.getWinner();
 
-	// Victoire IA
 	if (winner == player)
-		return 1000000 + depth;
+		return WIN_SCORE - board.getMoveCount();
 
-	// Victoire adversaire
 	if (winner != Box::EMPTY)
-		return -1000000 - depth;
+		return -WIN_SCORE + board.getMoveCount();
 
-	// Match nul
 	if (board.isFull())
 		return 0;
 
 	if (depth == 0)
-		return evalutate(board, player);
+		return evaluate(board, player);
 
-	if (maximizingPlayer) {
-		int maxEval = -1000000;
+	const int originalAlpha = alpha;
+	const int originalBeta = beta;
 
-		for (int i = 0; i < WIDTH; i++) {
-			if (!board.isColumnFull(i)) {
-				Board newBoard = board.duplicate();
-				Move move = Move(newBoard.currentPlayer, i);
-				newBoard.play(move);
-				newBoard.next();
-				int eval = minmax(newBoard, depth - 1, false, alpha, beta, player);
-				maxEval = std::max(maxEval, eval);
-				alpha = std::max(alpha, eval);
-				if (beta <= alpha)
-					break;
+	const TTKey key = makeKey(board);
+
+	int preferredColumn = -1;
+
+	if (const auto it = transpositionTable.find(key);
+		it != transpositionTable.end())
+	{
+		const TTEntry& entry = it->second;
+		preferredColumn = entry.bestColumn;
+
+		if (entry.depth >= depth)
+		{
+			if (entry.bound == Bound::Exact)
+				return entry.value;
+
+			if (entry.bound == Bound::Lower)
+				alpha = std::max(alpha, entry.value);
+			else
+				beta = std::min(beta, entry.value);
+
+			if (alpha >= beta)
+				return entry.value;
+		}
+	}
+
+	const bool maximizing = board.currentPlayer == player;
+	const Box mover = board.currentPlayer;
+
+	int bestValue = maximizing ? -INF : INF;
+	int bestColumn = -1;
+
+	auto searchColumn = [&](int column) -> bool
+	{
+		if (column < 0 || column >= WIDTH || board.isColumnFull(column))
+			return false;
+
+		if (!board.playColumn(column, mover))
+			return false;
+
+		board.next();
+
+		const int value = minmax(
+			board,
+			depth - 1,
+			alpha,
+			beta,
+			player
+		);
+
+		board.next();
+		board.undo();
+
+		if (maximizing)
+		{
+			if (value > bestValue)
+			{
+				bestValue = value;
+				bestColumn = column;
 			}
+
+			alpha = std::max(alpha, bestValue);
+		}
+		else
+		{
+			if (value < bestValue)
+			{
+				bestValue = value;
+				bestColumn = column;
+			}
+
+			beta = std::min(beta, bestValue);
 		}
 
-		return maxEval;
+		return alpha >= beta;
+	};
+
+	// Le meilleur coup memorise par la TT passe en premier.
+	if (preferredColumn != -1)
+	{
+		if (searchColumn(preferredColumn))
+			goto store_result;
 	}
 
-	int minEval = 1000000;
+	for (const int column : MOVE_ORDER)
+	{
+		if (column == preferredColumn)
+			continue;
 
-	for (int i = 0; i < WIDTH; i++) {
-		if (!board.isColumnFull(i)) {
-			Board newBoard = board.duplicate();
-			Move move = Move(newBoard.currentPlayer, i);
-			newBoard.play(move);
-			newBoard.next();
-			int eval = minmax(newBoard, depth - 1, true, alpha, beta, player);
-			minEval = std::min(minEval, eval);
-			beta = std::min(beta, eval);
-			if (beta <= alpha)
-				break;
-		}
+		if (searchColumn(column))
+			break;
 	}
 
-	return minEval;
+store_result:
+	Bound bound = Bound::Exact;
+
+	if (bestValue <= originalAlpha)
+		bound = Bound::Upper;
+	else if (bestValue >= originalBeta)
+		bound = Bound::Lower;
+
+	const TTEntry newEntry{
+		bestValue,
+		depth,
+		bestColumn,
+		bound
+	};
+
+	const auto existing = transpositionTable.find(key);
+
+	if (existing == transpositionTable.end())
+	{
+		transpositionTable.emplace(key, newEntry);
+	}
+	else if (depth >= existing->second.depth)
+	{
+		existing->second = newEntry;
+	}
+
+	return bestValue;
 }
 
-int BestMinMax::evalutate(const Board& board, Box player)
+int BestMinMax::evaluate(const Board& board, Box player) noexcept
 {
 	const Box opponent =
-		player == Box::RED
+		(player == Box::RED)
 		? Box::YELLOW
 		: Box::RED;
 
 	int score = 0;
-
 	int playerThreats = 0;
 	int opponentThreats = 0;
 
-	// --------------------------------------------------
-	// 1. Contrôle du centre
-	// --------------------------------------------------
+	// Le centre participe a plus d'alignements que les bords.
+	constexpr int centerColumn = WIDTH / 2;
 
-	const int centerColumn = WIDTH / 2;
-
-	for (int row = 0; row < HEIGHT; row++)
+	for (int row = 0; row < HEIGHT; ++row)
 	{
 		const Box cell = board.getCell(row, centerColumn);
 
 		if (cell == player)
 			score += 30;
-
 		else if (cell == opponent)
 			score -= 30;
 	}
 
-	// --------------------------------------------------
-	// Fonction qui vérifie si une case vide est jouable
-	// immédiatement (gravité du Puissance 4)
-	// --------------------------------------------------
-
-	auto isPlayable = [&](int row, int column)
-		{
-			if (board.getCell(row, column) != Box::EMPTY)
-				return false;
-
-			// Dernière ligne
-			if (row == HEIGHT - 1)
-				return true;
-
-			// Il faut un pion juste en dessous
-			return board.getCell(row + 1, column) != Box::EMPTY;
-		};
-
-	// --------------------------------------------------
-	// Évaluation d'une fenêtre de 4 cases
-	// --------------------------------------------------
-
-	auto evaluateWindow =
-		[&](int startRow, int startCol, int rowDir, int colDir)
-		{
-			int playerCount = 0;
-			int opponentCount = 0;
-			int emptyCount = 0;
-
-			int emptyRow = -1;
-			int emptyCol = -1;
-
-			for (int i = 0; i < 4; i++)
-			{
-				const int row = startRow + rowDir * i;
-				const int col = startCol + colDir * i;
-
-				const Box cell = board.getCell(row, col);
-
-				if (cell == player)
-				{
-					playerCount++;
-				}
-				else if (cell == opponent)
-				{
-					opponentCount++;
-				}
-				else
-				{
-					emptyCount++;
-					emptyRow = row;
-					emptyCol = col;
-				}
-			}
-
-			// Fenêtre bloquée :
-			// les deux joueurs sont présents
-			if (playerCount > 0 && opponentCount > 0)
-				return;
-
-			// ----------------------------------------------
-			// IA
-			// ----------------------------------------------
-
-			if (playerCount == 4)
-			{
-				score += 100000;
-			}
-			else if (playerCount == 3 && emptyCount == 1)
-			{
-				if (isPlayable(emptyRow, emptyCol))
-				{
-					score += 5000;
-					playerThreats++;
-				}
-				else
-				{
-					score += 500;
-				}
-			}
-			else if (playerCount == 2 && emptyCount == 2)
-			{
-				score += 100;
-			}
-			else if (playerCount == 1 && emptyCount == 3)
-			{
-				score += 5;
-			}
-
-			// ----------------------------------------------
-			// Adversaire
-			// ----------------------------------------------
-
-			if (opponentCount == 4)
-			{
-				score -= 100000;
-			}
-			else if (opponentCount == 3 && emptyCount == 1)
-			{
-				if (isPlayable(emptyRow, emptyCol))
-				{
-					// On pénalise légèrement plus que
-					// notre propre attaque :
-					// bloquer une victoire est prioritaire.
-					score -= 7000;
-					opponentThreats++;
-				}
-				else
-				{
-					score -= 700;
-				}
-			}
-			else if (opponentCount == 2 && emptyCount == 2)
-			{
-				score -= 150;
-			}
-			else if (opponentCount == 1 && emptyCount == 3)
-			{
-				score -= 5;
-			}
-		};
-
-	// ==================================================
-	// HORIZONTAL
-	// ==================================================
-
-	for (int row = 0; row < HEIGHT; row++)
+	// Toutes les fenetres sont pre-calculees a la compilation.
+	for (const auto& window : WINDOWS)
 	{
-		for (int col = 0; col <= WIDTH - 4; col++)
+		int playerCount = 0;
+		int opponentCount = 0;
+		int emptyCount = 0;
+		int emptyIndex = -1;
+
+		for (const int index : window)
 		{
-			evaluateWindow(row, col, 0, 1);
+			const int row = index / WIDTH;
+			const int col = index % WIDTH;
+			const Box cell = board.getCell(row, col);
+
+			if (cell == player)
+			{
+				++playerCount;
+			}
+			else if (cell == opponent)
+			{
+				++opponentCount;
+			}
+			else
+			{
+				++emptyCount;
+				emptyIndex = index;
+			}
+		}
+
+		// Fenetre deja bloquee par les deux couleurs.
+		if (playerCount != 0 && opponentCount != 0)
+			continue;
+
+		bool emptyIsPlayable = false;
+
+		if (emptyCount == 1)
+		{
+			const int emptyRow = emptyIndex / WIDTH;
+			const int emptyCol = emptyIndex % WIDTH;
+
+			emptyIsPlayable =
+				board.getLandingRow(emptyCol) == emptyRow;
+		}
+
+		if (playerCount == 4)
+		{
+			score += 100'000;
+		}
+		else if (playerCount == 3 && emptyCount == 1)
+		{
+			if (emptyIsPlayable)
+			{
+				score += 5'000;
+				++playerThreats;
+			}
+			else
+			{
+				score += 500;
+			}
+		}
+		else if (playerCount == 2 && emptyCount == 2)
+		{
+			score += 100;
+		}
+		else if (playerCount == 1 && emptyCount == 3)
+		{
+			score += 5;
+		}
+
+		if (opponentCount == 4)
+		{
+			score -= 100'000;
+		}
+		else if (opponentCount == 3 && emptyCount == 1)
+		{
+			if (emptyIsPlayable)
+			{
+				score -= 7'000;
+				++opponentThreats;
+			}
+			else
+			{
+				score -= 700;
+			}
+		}
+		else if (opponentCount == 2 && emptyCount == 2)
+		{
+			score -= 150;
+		}
+		else if (opponentCount == 1 && emptyCount == 3)
+		{
+			score -= 5;
 		}
 	}
-
-	// ==================================================
-	// VERTICAL
-	// ==================================================
-
-	for (int row = 0; row <= HEIGHT - 4; row++)
-	{
-		for (int col = 0; col < WIDTH; col++)
-		{
-			evaluateWindow(row, col, 1, 0);
-		}
-	}
-
-	// ==================================================
-	// DIAGONALE \
-	// ==================================================
-
-	for (int row = 0; row <= HEIGHT - 4; row++)
-	{
-		for (int col = 0; col <= WIDTH - 4; col++)
-		{
-			evaluateWindow(row, col, 1, 1);
-		}
-	}
-
-	// ==================================================
-	// DIAGONALE /
-	// ==================================================
-
-	for (int row = 0; row <= HEIGHT - 4; row++)
-	{
-		for (int col = 3; col < WIDTH; col++)
-		{
-			evaluateWindow(row, col, 1, -1);
-		}
-	}
-
-	// --------------------------------------------------
-	// Double menace
-	//
-	// Deux façons différentes de gagner au prochain
-	// tour sont extrêmement fortes.
-	// --------------------------------------------------
 
 	if (playerThreats >= 2)
-		score += 20000;
+		score += 20'000;
 
 	if (opponentThreats >= 2)
-		score -= 25000;
+		score -= 25'000;
 
 	return score;
 }
