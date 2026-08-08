@@ -8,18 +8,41 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <limits>
 
 namespace
 {
-	constexpr int DEPTH = 11;
+	constexpr int MIN_DEPTH = 11;
+	constexpr int MOVES_PER_EXTRA_DEPTH = 4;
+
+	constexpr int MAX_THINK_TIME_MS = 3000;
+
 	constexpr int WIN_SCORE = 1'000'000;
 	constexpr int INF = 2'000'000;
 
-	// L'ordre des coups est capital pour l'efficacite de l'alpha-beta.
+	thread_local std::chrono::steady_clock::time_point SEARCH_DEADLINE;
+	thread_local bool SEARCH_TIMED_OUT = false;
+	thread_local std::uint64_t SEARCHED_NODES = 0;
+
+	inline bool timeIsUp() noexcept
+	{
+		++SEARCHED_NODES;
+
+		if ((SEARCHED_NODES & 1023ULL) != 0)
+			return false;
+
+		if (std::chrono::steady_clock::now() >= SEARCH_DEADLINE)
+		{
+			SEARCH_TIMED_OUT = true;
+			return true;
+		}
+
+		return false;
+	}
+
 	constexpr std::array<int, WIDTH> MOVE_ORDER = { 3, 2, 4, 1, 5, 0, 6 };
 
-	// Les 69 alignements possibles de 4 cases sur un plateau 7x6.
 	constexpr auto makeWindows()
 	{
 		std::array<std::array<int, 4>, 69> windows{};
@@ -114,60 +137,131 @@ Move BestMinMax::getMove(Board board, Box player)
 	if (board.isFull())
 		return Move(Box::EMPTY, -1);
 
-	// On garde les buckets entre les tours, mais on supprime les anciennes
-	// evaluations car les scores sont calcules du point de vue de "player".
 	transpositionTable.clear();
 
-	if (transpositionTable.bucket_count() < 200'000)
+	if (transpositionTable.bucket_count() < 300'000)
 	{
 		transpositionTable.max_load_factor(0.75f);
-		transpositionTable.reserve(200'000);
+		transpositionTable.reserve(300'000);
 	}
 
-	int bestValue = -INF;
-	int bestColumn = -1;
-	int alpha = -INF;
+	int bestCompletedColumn = -1;
 
-	// Centre -> bords.
 	for (const int column : MOVE_ORDER)
 	{
-		if (board.isColumnFull(column))
-			continue;
-
-		if (!board.playColumn(column, player))
-			continue;
-
-		board.next();
-
-		const int value = minmax(
-			board,
-			DEPTH - 1,
-			alpha,
-			INF,
-			player
-		);
-
-		// Remet exactement le plateau dans son etat initial.
-		board.next();
-		board.undo();
-
-		if (value > bestValue)
+		if (!board.isColumnFull(column))
 		{
-			bestValue = value;
-			bestColumn = column;
-		}
-
-		alpha = std::max(alpha, bestValue);
-
-		// On ne peut pas faire mieux qu'une victoire immediate.
-		if (bestValue >= WIN_SCORE - (board.getMoveCount() + 1))
+			bestCompletedColumn = column;
 			break;
+		}
 	}
 
-	if (bestColumn == -1)
+	if (bestCompletedColumn == -1)
 		return Move(Box::EMPTY, -1);
 
-	return Move(player, bestColumn);
+	const int playedMoves = board.getMoveCount();
+	const int remainingMoves = WIDTH * HEIGHT - playedMoves;
+
+	const int progressionDepth =
+		MIN_DEPTH + playedMoves / MOVES_PER_EXTRA_DEPTH;
+
+	const int initialDepth =
+		std::min(MIN_DEPTH, remainingMoves);
+
+	const int targetDepth =
+		std::min(remainingMoves, progressionDepth);
+
+	SEARCH_DEADLINE =
+		std::chrono::steady_clock::now() +
+		std::chrono::milliseconds(MAX_THINK_TIME_MS);
+
+	SEARCH_TIMED_OUT = false;
+	SEARCHED_NODES = 0;
+
+	for (int currentDepth = initialDepth;
+		currentDepth <= targetDepth;
+		++currentDepth)
+	{
+		if (std::chrono::steady_clock::now() >= SEARCH_DEADLINE)
+			break;
+
+		SEARCH_TIMED_OUT = false;
+
+		int iterationBestValue = -INF;
+		int iterationBestColumn = -1;
+		int alpha = -INF;
+		bool iterationCompleted = true;
+
+		for (const int column : MOVE_ORDER)
+		{
+			if (board.isColumnFull(column))
+				continue;
+
+			if (std::chrono::steady_clock::now() >= SEARCH_DEADLINE)
+			{
+				SEARCH_TIMED_OUT = true;
+				iterationCompleted = false;
+				break;
+			}
+
+			if (!board.playColumn(column, player))
+				continue;
+
+			board.next();
+
+			const int value = minmax(
+				board,
+				currentDepth - 1,
+				alpha,
+				INF,
+				player
+			);
+
+			board.next();
+			board.undo();
+
+			if (SEARCH_TIMED_OUT)
+			{
+				iterationCompleted = false;
+				break;
+			}
+
+			if (value > iterationBestValue)
+			{
+				iterationBestValue = value;
+				iterationBestColumn = column;
+			}
+
+			alpha = std::max(alpha, iterationBestValue);
+
+			if (iterationBestValue >=
+				WIN_SCORE - (board.getMoveCount() + 1))
+			{
+				break;
+			}
+		}
+
+		if (!iterationCompleted ||
+			SEARCH_TIMED_OUT ||
+			iterationBestColumn == -1)
+		{
+			break;
+		}
+
+		bestCompletedColumn = iterationBestColumn;
+
+		if (currentDepth >= remainingMoves)
+			break;
+
+
+		if (iterationBestValue >=
+			WIN_SCORE - (board.getMoveCount() + 1))
+		{
+			break;
+		}
+	}
+
+	return Move(player, bestCompletedColumn);
 }
 
 int BestMinMax::minmax(
@@ -178,6 +272,9 @@ int BestMinMax::minmax(
 	Box player
 )
 {
+	if (timeIsUp())
+		return 0;
+
 	const Box winner = board.getWinner();
 
 	if (winner == player)
@@ -227,51 +324,57 @@ int BestMinMax::minmax(
 	int bestColumn = -1;
 
 	auto searchColumn = [&](int column) -> bool
-	{
-		if (column < 0 || column >= WIDTH || board.isColumnFull(column))
-			return false;
-
-		if (!board.playColumn(column, mover))
-			return false;
-
-		board.next();
-
-		const int value = minmax(
-			board,
-			depth - 1,
-			alpha,
-			beta,
-			player
-		);
-
-		board.next();
-		board.undo();
-
-		if (maximizing)
 		{
-			if (value > bestValue)
+			if (column < 0 ||
+				column >= WIDTH ||
+				board.isColumnFull(column))
 			{
-				bestValue = value;
-				bestColumn = column;
+				return false;
 			}
 
-			alpha = std::max(alpha, bestValue);
-		}
-		else
-		{
-			if (value < bestValue)
+			if (!board.playColumn(column, mover))
+				return false;
+
+			board.next();
+
+			const int value = minmax(
+				board,
+				depth - 1,
+				alpha,
+				beta,
+				player
+			);
+
+			board.next();
+			board.undo();
+
+			if (SEARCH_TIMED_OUT)
+				return true;
+
+			if (maximizing)
 			{
-				bestValue = value;
-				bestColumn = column;
+				if (value > bestValue)
+				{
+					bestValue = value;
+					bestColumn = column;
+				}
+
+				alpha = std::max(alpha, bestValue);
+			}
+			else
+			{
+				if (value < bestValue)
+				{
+					bestValue = value;
+					bestColumn = column;
+				}
+
+				beta = std::min(beta, bestValue);
 			}
 
-			beta = std::min(beta, bestValue);
-		}
+			return alpha >= beta;
+		};
 
-		return alpha >= beta;
-	};
-
-	// Le meilleur coup memorise par la TT passe en premier.
 	if (preferredColumn != -1)
 	{
 		if (searchColumn(preferredColumn))
@@ -288,6 +391,9 @@ int BestMinMax::minmax(
 	}
 
 store_result:
+	if (SEARCH_TIMED_OUT)
+		return 0;
+
 	Bound bound = Bound::Exact;
 
 	if (bestValue <= originalAlpha)
@@ -327,7 +433,6 @@ int BestMinMax::evaluate(const Board& board, Box player) noexcept
 	int playerThreats = 0;
 	int opponentThreats = 0;
 
-	// Le centre participe a plus d'alignements que les bords.
 	constexpr int centerColumn = WIDTH / 2;
 
 	for (int row = 0; row < HEIGHT; ++row)
@@ -340,7 +445,6 @@ int BestMinMax::evaluate(const Board& board, Box player) noexcept
 			score -= 30;
 	}
 
-	// Toutes les fenetres sont pre-calculees a la compilation.
 	for (const auto& window : WINDOWS)
 	{
 		int playerCount = 0;
@@ -369,7 +473,6 @@ int BestMinMax::evaluate(const Board& board, Box player) noexcept
 			}
 		}
 
-		// Fenetre deja bloquee par les deux couleurs.
 		if (playerCount != 0 && opponentCount != 0)
 			continue;
 
