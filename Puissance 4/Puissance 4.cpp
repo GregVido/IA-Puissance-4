@@ -7,8 +7,20 @@
 #include "BestMinMax.h"
 #include "IA.h"
 
+#include <chrono>
+#include <thread>
+
 int main()
 {
+	using namespace std::chrono_literals;
+
+	std::cout << "Puissance 4 - IA - By GregVido" << '\n';
+
+	const auto start = std::chrono::high_resolution_clock::now();
+	std::this_thread::sleep_for(1s);
+	const auto end = std::chrono::high_resolution_clock::now();
+	const std::chrono::duration<double, std::milli> elapsed = end - start;
+
 	Board board;
 
 	BestMinMax bestMinMax;
