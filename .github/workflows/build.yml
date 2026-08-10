@@ -2,10 +2,10 @@ name: Build & Release C++20
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
 
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
   workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
           /verbosity:minimal
 
       - name: Package build
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path . -Recurse -Filter "*.exe" |
@@ -57,7 +57,7 @@ jobs:
             -Force
 
       - name: Create GitHub Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
