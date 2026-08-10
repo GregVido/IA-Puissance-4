@@ -27,7 +27,7 @@ jobs:
 
       - name: Build solution
         run: >
-          msbuild "Puissance 4.sln"
+          msbuild "Puissance 4.slnx"
           /m
           /t:Build
           /p:Configuration=Release
