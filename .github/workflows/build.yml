@@ -1,13 +1,16 @@
-name: Build C++20
+name: Build & Release C++20
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -30,3 +33,37 @@ jobs:
           /p:Configuration=Release
           /p:Platform=x64
           /verbosity:minimal
+
+      - name: Package build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path . -Recurse -Filter "*.exe" |
+            Where-Object { $_.FullName -match '\\x64\\Release\\' } |
+            Select-Object -First 1
+
+          if (-not $exe) {
+            Write-Host "Contenu du projet :"
+            Get-ChildItem -Path . -Recurse -Filter "*.exe"
+            throw "Aucun executable Release x64 trouve."
+          }
+
+          Write-Host "Executable trouve : $($exe.FullName)"
+          Write-Host "Dossier : $($exe.Directory.FullName)"
+
+          Compress-Archive `
+            -Path "$($exe.Directory.FullName)\*" `
+            -DestinationPath "Puissance-4-Windows-x64.zip" `
+            -Force
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "build-${{ github.run_number }}" `
+            "Puissance-4-Windows-x64.zip" `
+            --target "${{ github.sha }}" `
+            --title "Puissance 4 - Build ${{ github.run_number }}" `
+            --generate-notes
