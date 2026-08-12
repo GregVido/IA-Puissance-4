@@ -33,9 +33,9 @@ int main()
 
 	int red, yellow;
 
-	std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Random, 1: MinMax, 2: BestMinMax) : ";
+	std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> red;
-	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Random, 1: MinMax, 2: BestMinMax) : ";
+	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> yellow;
 
 	const auto start = std::chrono::high_resolution_clock::now();
