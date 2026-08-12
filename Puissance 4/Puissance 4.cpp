@@ -10,6 +10,21 @@
 #include <chrono>
 #include <thread>
 
+IA* getIABYType(int type)
+{
+	switch (type)
+	{
+	case 0:
+		return new RandomIA();
+	case 1:
+		return new MinMaxIA();
+	case 2:
+		return new BestMinMax();
+	default:
+		return nullptr;
+	}
+}
+
 int main()
 {
 	using namespace std::chrono_literals;
@@ -30,17 +45,14 @@ int main()
 
 	Board board;
 
-	BestMinMax bestMinMax;
-	MinMaxIA minMax;
-
 	while (board.getWinner() == Box::EMPTY && !board.isFull())
 	{
 		const Box player = board.currentPlayer;
 
 		IA* ia =
 			(player == Box::YELLOW)
-			? static_cast<IA*>(&bestMinMax)
-			: static_cast<IA*>(&minMax);
+			? static_cast<IA*>(getIABYType(yellow))
+			: static_cast<IA*>(getIABYType(red));
 
 		const Move move = ia->getMove(board, player);
 
