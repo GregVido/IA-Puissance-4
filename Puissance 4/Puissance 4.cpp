@@ -47,14 +47,14 @@ int main()
 
 	Board board;
 
+	IA* redIA = getIABYType(red);
+	IA* yellowIA = getIABYType(yellow);
+
 	while (board.getWinner() == Box::EMPTY && !board.isFull())
 	{
 		const Box player = board.currentPlayer;
 
-		IA* ia =
-			(player == Box::YELLOW)
-			? static_cast<IA*>(getIABYType(yellow))
-			: static_cast<IA*>(getIABYType(red));
+		IA* ia = player == Box::YELLOW ? yellowIA : redIA;
 
 		const Move move = ia->getMove(board, player);
 
@@ -70,6 +70,9 @@ int main()
 
 		board.next();
 	}
+
+	delete redIA;
+	delete yellowIA;
 
 	const Box winner = board.getWinner();
 
