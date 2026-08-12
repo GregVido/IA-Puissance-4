@@ -29,7 +29,7 @@ int main()
 {
 	using namespace std::chrono_literals;
 
-	std::cout << "Puissance 4 - IA - By GregVido" << '\n';
+	std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
 
 	int red, yellow;
 
