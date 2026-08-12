@@ -10,6 +10,8 @@
 #include <chrono>
 #include <thread>
 
+#include <limits>
+
 IA* getIABYType(int type)
 {
 	switch (type)
@@ -81,6 +83,8 @@ int main()
 		<< '\n';
 
 	std::cout << "Appuie sur Entree pour quitter...";
+
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::cin.get();
 
 	return 0;
