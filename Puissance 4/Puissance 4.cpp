@@ -16,10 +16,12 @@ int main()
 
 	std::cout << "Puissance 4 - IA - By GregVido" << '\n';
 
-	int type;
+	int red, yellow;
 
-	std::cout << "Choisis le type d'IA (0: Random, 1: MinMax, 2: BestMinMax) : ";
-	std::cin >> type;
+	std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Random, 1: MinMax, 2: BestMinMax) : ";
+	std::cin >> red;
+	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Random, 1: MinMax, 2: BestMinMax) : ";
+	std::cin >> yellow;
 
 	const auto start = std::chrono::high_resolution_clock::now();
 	std::this_thread::sleep_for(1s);
