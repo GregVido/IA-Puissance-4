@@ -80,5 +80,8 @@ int main()
 			: "Personne")
 		<< '\n';
 
+	std::cout << "Appuie sur Entree pour quitter...";
+	std::cin.get();
+
 	return 0;
 }
