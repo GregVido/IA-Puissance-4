@@ -47,6 +47,12 @@ int main()
 	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> yellow;
 
+	if (yellow == 1 || yellow == 2)
+	{
+		std::cout << "Choisis la profondeur de recherche pour le joueur Jaune (1-10) : ";
+		std::cin >> yellowDepth;
+	}
+
 	const auto start = std::chrono::high_resolution_clock::now();
 	std::this_thread::sleep_for(1s);
 	const auto end = std::chrono::high_resolution_clock::now();
