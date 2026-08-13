@@ -37,6 +37,13 @@ int main()
 
 	std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> red;
+
+	if (red == 1 || red == 2)
+	{
+		std::cout << "Choisis la profondeur de recherche pour le joueur Rouge (1-10) : ";
+		std::cin >> redDepth;
+	}
+
 	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> yellow;
 
