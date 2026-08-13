@@ -12,14 +12,14 @@
 
 #include <limits>
 
-IA* getIABYType(int type)
+IA* getIABYType(int type, int depth)
 {
 	switch (type)
 	{
 	case 0:
 		return new RandomIA();
 	case 1:
-		return new MinMaxIA();
+		return new MinMaxIA(depth);
 	case 2:
 		return new BestMinMax();
 	default:
@@ -60,8 +60,8 @@ int main()
 
 	Board board;
 
-	IA* redIA = getIABYType(red);
-	IA* yellowIA = getIABYType(yellow);
+	IA* redIA = getIABYType(red, redDepth);
+	IA* yellowIA = getIABYType(yellow, yellowDepth);
 
 	while (board.getWinner() == Box::EMPTY && !board.isFull())
 	{

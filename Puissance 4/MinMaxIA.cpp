@@ -9,7 +9,7 @@
 #include <random>
 #include <vector>
 
-#define DEPTH 10
+MinMaxIA::MinMaxIA(int depth) : _depth(depth) {}
 
 Move MinMaxIA::getMove(Board board, Box player)
 {
@@ -29,14 +29,14 @@ Move MinMaxIA::getMove(Board board, Box player)
 		futures.push_back(
 			std::async(
 				std::launch::async,
-				[localBoard = board, currentMove, player]() mutable -> MoveResult
+				[localBoard = board, currentMove, player, depth = _depth]() mutable -> MoveResult
 				{
 					localBoard.play(currentMove);
 					localBoard.next();
 
 					const int moveValue = MinMaxIA::minmax(
 						localBoard,
-						DEPTH - 1,
+						depth - 1,
 						false,
 						-1000000,
 						1000000,
