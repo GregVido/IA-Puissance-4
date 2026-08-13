@@ -9,9 +9,12 @@
 class BestMinMax : public IA
 {
 public:
+	BestMinMax(int depth);
 	Move getMove(Board board, Box player) override;
 
 private:
+	int _depth;
+
 	enum class Bound : std::uint8_t
 	{
 		Exact,

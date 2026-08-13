@@ -13,7 +13,6 @@
 
 namespace
 {
-	constexpr int MIN_DEPTH = 11;
 	constexpr int MOVES_PER_EXTRA_DEPTH = 4;
 
 	constexpr int MAX_THINK_TIME_MS = 3000;
@@ -123,6 +122,8 @@ std::size_t BestMinMax::TTKeyHash::operator()(const TTKey& key) const noexcept
 	return static_cast<std::size_t>(hash);
 }
 
+BestMinMax::BestMinMax(int depth) : _depth(depth) {}
+
 BestMinMax::TTKey BestMinMax::makeKey(const Board& board) noexcept
 {
 	return {
@@ -163,10 +164,10 @@ Move BestMinMax::getMove(Board board, Box player)
 	const int remainingMoves = WIDTH * HEIGHT - playedMoves;
 
 	const int progressionDepth =
-		MIN_DEPTH + playedMoves / MOVES_PER_EXTRA_DEPTH;
+		_depth + playedMoves / MOVES_PER_EXTRA_DEPTH;
 
 	const int initialDepth =
-		std::min(MIN_DEPTH, remainingMoves);
+		std::min(_depth, remainingMoves);
 
 	const int targetDepth =
 		std::min(remainingMoves, progressionDepth);

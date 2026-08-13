@@ -21,7 +21,7 @@ IA* getIABYType(int type, int depth)
 	case 1:
 		return new MinMaxIA(depth);
 	case 2:
-		return new BestMinMax();
+		return new BestMinMax(depth);
 	default:
 		return nullptr;
 	}
