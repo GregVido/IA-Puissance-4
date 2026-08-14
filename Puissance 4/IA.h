@@ -7,6 +7,6 @@
 class IA
 {
 public:
-	IA() = default;
+	virtual ~IA() = default;
 	virtual Move getMove(Board board, Box player) = 0;
 };

@@ -13,6 +13,8 @@
 
 namespace
 {
+	constexpr std::size_t MAX_TT_ENTRIES = 500'000;
+
 	constexpr int MOVES_PER_EXTRA_DEPTH = 4;
 
 	constexpr int MAX_THINK_TIME_MS = 3000;
@@ -140,10 +142,10 @@ Move BestMinMax::getMove(Board board, Box player)
 
 	transpositionTable.clear();
 
-	if (transpositionTable.bucket_count() < 300'000)
+	if (transpositionTable.bucket_count() < MAX_TT_ENTRIES)
 	{
 		transpositionTable.max_load_factor(0.75f);
-		transpositionTable.reserve(300'000);
+		transpositionTable.reserve(MAX_TT_ENTRIES);
 	}
 
 	int bestCompletedColumn = -1;
@@ -413,7 +415,10 @@ store_result:
 
 	if (existing == transpositionTable.end())
 	{
-		transpositionTable.emplace(key, newEntry);
+		if (transpositionTable.size() < MAX_TT_ENTRIES)
+		{
+			transpositionTable.emplace(key, newEntry);
+		}
 	}
 	else if (depth >= existing->second.depth)
 	{
