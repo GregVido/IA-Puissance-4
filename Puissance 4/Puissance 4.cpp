@@ -33,7 +33,10 @@ int main()
 
 	std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
 
-	int red, yellow, redDepth, yellowDepth;
+	int red = 0;
+	int yellow = 0;
+	int redDepth = 1;
+	int yellowDepth = 1;
 
 	std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable) : ";
 	std::cin >> red;
