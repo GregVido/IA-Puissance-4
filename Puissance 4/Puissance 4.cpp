@@ -1,6 +1,9 @@
 #include <iostream>
 #include <memory>
 
+#include <algorithm>
+#include <cstdint>
+#include <iomanip>
 #include "Board.h"
 #include "RandomIA.h"
 #include "MinMaxIA.h"
@@ -43,8 +46,10 @@ int main()
 
 	if (red == 1 || red == 2)
 	{
-		std::cout << "Choisis la profondeur de recherche pour le joueur Rouge (1-10) : ";
+		std::cout << "Choisis la profondeur de recherche pour le joueur Rouge (1-15) : ";
 		std::cin >> redDepth;
+
+		redDepth = std::clamp(redDepth, 1, 15);
 	}
 
 	std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable) : ";
