@@ -33,12 +33,11 @@ IA* getIABYType(int type, int depth)
 int main()
 {
 	using namespace std::chrono_literals;
-
-	std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
-
 	bool loop = true;
 
 	while (loop) {
+		std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
+
 		int red = 0;
 		int yellow = 0;
 		int redDepth = 1;
@@ -120,6 +119,8 @@ int main()
 		{
 			loop = false;
 		}
+		else
+			system("cls");
 
 	}
 
