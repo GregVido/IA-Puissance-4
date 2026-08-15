@@ -113,7 +113,7 @@ int main()
 
 		int continueChoice = 0;
 
-		std::cout << "Voulez-vous recommencer ? (1: Oui, 0: Non) : ";
+		std::cout << "\nVoulez-vous recommencer ? (1: Oui, 0: Non) : ";
 		std::cin >> continueChoice;
 
 		if (!continueChoice)
