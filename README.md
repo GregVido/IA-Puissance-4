@@ -8,3 +8,4 @@
     </td>
   </tr>
 </table>
+<center><i>Fait combattre des IA entre elles !!<i></center>
