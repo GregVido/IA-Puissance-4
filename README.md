@@ -19,4 +19,8 @@
 <p>
 Lorsque vous lancez l'application, elle vous demandera qu'elle IA choisir pour le joueur Rouge.<br>
 Chaque IA a son propre compoortement.
+
+- Facile : L'IA joue aleatoirement.
+- Forte : Elle analyse la partie en cours pour jouer les coups qui lui permettra de gagner à coups sûr.
+- Imbattable : Comme la forte, mais beaucoup plus performante, et précise dans sa logique d'interpretation de la partie.
 </p>
