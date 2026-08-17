@@ -12,7 +12,9 @@
 
 ## Fonctionnement
 
-<img align="center" src="public/debut.png" alt="Logo" width="700">
+<div align="center">
+  <img src="public/debut.png" alt="Logo" width="700">
+</div>
 
 <p>
 Lorsque vous lancez l'application, elle vous demandera qu'elle IA choisir pour le joueur Rouge.<br>
