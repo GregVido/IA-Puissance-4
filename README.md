@@ -25,3 +25,8 @@ Chaque IA a son propre compoortement.
 - Forte : Elle analyse la partie en cours pour jouer les coups qui lui permettra de gagner à coups sûr.
 - Imbattable : Comme la forte, mais beaucoup plus performante, et précise dans sa logique d'interpretation de la partie.
 </p>
+
+<p>
+Une fois l'IA séléctionnée, l'application vous demandera quelle IA choisir pour le joueur Jaune.<br>
+Dès que l'IA sera choisis, la partie commancera automatiquement.
+</p>
