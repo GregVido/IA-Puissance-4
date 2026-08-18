@@ -35,3 +35,12 @@ Chaque IA a son propre compoortement.
 Une fois l'IA séléctionnée, l'application vous demandera quelle IA choisir pour le joueur Jaune.<br>
 Dès que l'IA sera choisis, la partie commancera automatiquement.
 </p>
+
+<div align="center">
+  <img src="public/partie_finie.png" alt="Logo" width="700">
+</div>
+<br>
+
+<p>
+Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la partie, de recommancer un nouveau combat, ou alors de quitter l'application.
+</p>
