@@ -15,6 +15,7 @@
 <div align="center">
   <img src="public/debut.png" alt="Logo" width="700">
 </div>
+<br>
 
 <p>
 Lorsque vous lancez l'application, elle vous demandera qu'elle IA choisir pour le joueur Rouge.<br>
