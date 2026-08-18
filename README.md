@@ -13,7 +13,7 @@
 ## Fonctionnement
 
 <div align="center">
-  <img src="public/debut.png" alt="Logo" width="700">
+  <img src="public/choix_rouge.png" alt="Logo" width="700">
 </div>
 <br>
 
@@ -25,6 +25,10 @@ Chaque IA a son propre compoortement.
 - Forte : Elle analyse la partie en cours pour jouer les coups qui lui permettra de gagner à coups sûr.
 - Imbattable : Comme la forte, mais beaucoup plus performante, et précise dans sa logique d'interpretation de la partie.
 </p>
+
+<div align="center">
+  <img src="public/choix_jaune.png" alt="Logo" width="700">
+</div>
 
 <p>
 Une fois l'IA séléctionnée, l'application vous demandera quelle IA choisir pour le joueur Jaune.<br>
