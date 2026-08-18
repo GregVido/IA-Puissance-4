@@ -29,6 +29,7 @@ Chaque IA a son propre compoortement.
 <div align="center">
   <img src="public/choix_jaune.png" alt="Logo" width="700">
 </div>
+<br>
 
 <p>
 Une fois l'IA séléctionnée, l'application vous demandera quelle IA choisir pour le joueur Jaune.<br>
