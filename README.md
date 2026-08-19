@@ -53,3 +53,4 @@ Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la 
 
 Malgrès l'optimisation des IA, le cout de performance de la profondeur de la recherche reste expodentiel. essayez d'abord avec des valeurs assez basses, et tentez d'augmenter au fur et à mesure.
 <br>
+Pour ma part, si je choisis l'IA imbattable et que je mets une profondeur de 15 (maximum), chaque coup prend environ 4 secondes. 
