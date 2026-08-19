@@ -44,3 +44,6 @@ Dès que l'IA sera choisis, la partie commancera automatiquement.
 <p>
 Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la partie, de recommancer un nouveau combat, ou alors de quitter l'application.
 </p>
+
+## Profondeur de rechercher
+TODO
