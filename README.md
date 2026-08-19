@@ -13,7 +13,7 @@
 ## Fonctionnement
 
 <div align="center">
-  <img src="public/choix_rouge.png" alt="Logo" width="700">
+  <img src="public/choix_rouge.png" alt="Choix de l'IA du jeton rouge" width="700">
 </div>
 <br>
 
@@ -27,7 +27,7 @@ Chaque IA a son propre compoortement.
 </p>
 
 <div align="center">
-  <img src="public/choix_jaune.png" alt="Logo" width="700">
+  <img src="public/choix_jaune.png" alt="Choix de l'IA du jeton jaune" width="700">
 </div>
 <br>
 
@@ -37,7 +37,7 @@ Dès que l'IA sera choisis, la partie commancera automatiquement.
 </p>
 
 <div align="center">
-  <img src="public/partie_finie.png" alt="Logo" width="700">
+  <img src="public/partie_finie.png" alt="Partie terminée" width="700">
 </div>
 <br>
 
@@ -47,6 +47,6 @@ Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la 
 
 ## Profondeur de rechercher
 <div align="center">
-  <img src="public/profondeur.png" alt="Logo" width="700">
+  <img src="public/profondeur.png" alt="Choix de la prodondeur" width="700">
 </div>
 <br>
