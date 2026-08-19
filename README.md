@@ -50,3 +50,6 @@ Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la 
   <img src="public/profondeur.png" alt="Choix de la prodondeur" width="700">
 </div>
 <br>
+
+Malgrès l'optimisation des IA, le cout de performance de la profondeur de la recherche reste expodentiel. essayez d'abord avec des valeurs assez basses, et tentez d'augmenter au fur et à mesure.
+<br>
