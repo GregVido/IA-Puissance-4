@@ -46,4 +46,7 @@ Lorsque la partie est finie, vous avez le choix de regarder chaque étape de la 
 </p>
 
 ## Profondeur de rechercher
-TODO
+<div align="center">
+  <img src="public/profondeur.png" alt="Logo" width="700">
+</div>
+<br>
