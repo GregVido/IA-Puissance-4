@@ -2,8 +2,12 @@
 // Microsoft Visual C++ generated include file.
 // Used by Puissance 4.rc
 
-// Valeurs par défaut suivantes des nouveaux objets
+// Valeurs par dï¿½faut suivantes des nouveaux objets
 // 
+#pragma once
+
+#define IDI_ICON1 101
+
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101

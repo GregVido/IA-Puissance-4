@@ -15,6 +15,10 @@
 
 #include <limits>
 
+#define NOMINMAX
+#include <Windows.h>
+#include "resource.h"
+
 IA* getIABYType(int type, int depth)
 {
 	switch (type)
@@ -30,10 +34,24 @@ IA* getIABYType(int type, int depth)
 	}
 }
 
+void setIcon() {
+	HWND console = GetConsoleWindow();
+
+	HICON icon = LoadIcon(
+		GetModuleHandle(nullptr),
+		MAKEINTRESOURCE(IDI_ICON1)
+	);
+
+	SendMessage(console, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
+	SendMessage(console, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
+}
+
 int main()
 {
 	using namespace std::chrono_literals;
 	bool loop = true;
+
+	setIcon();
 
 	while (loop) {
 		std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
