@@ -69,7 +69,7 @@ Pour ma part, si je choisis l'IA imbattable avec une profondeur de 15 (maximum),
 
 Voici les spécifications de mon PC :
 
-- OS : Windows 11
+- OS : Windows 11 25H2
 
 - Processeur : Intel Core 7 Ultra 295KF (5 GHz et 20 cœurs)
 
