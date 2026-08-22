@@ -76,4 +76,9 @@ public:
 
 	Board duplicate() const;
 	void draw() const;
+
+	int getWidth() const noexcept
+	{
+		return WIDTH;
+	}
 };
