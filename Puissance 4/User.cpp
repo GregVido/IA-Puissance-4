@@ -8,6 +8,8 @@ Move User::getMove(Board board, Box player)
 	move.box = player;
 	move.column = -1;
 
+	board.draw();
+
 	std::cout << "Sur quel colonne voulez vous placer votre jeton ? (1 - " << board.getWidth() << ") : ";
 	std::cin >> move.column;
 	move.column--;

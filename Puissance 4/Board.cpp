@@ -261,7 +261,7 @@ void Board::draw() const
 	std::cout << "-\n  ";
 
 	for (int column = 0; column < WIDTH; ++column)
-		std::cout << column << "   ";
+		std::cout << column + 1 << "   ";
 
 	std::cout << '\n';
 }
