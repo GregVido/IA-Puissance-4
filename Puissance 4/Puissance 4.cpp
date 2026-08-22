@@ -75,12 +75,12 @@ int main()
 			redDepth = std::clamp(redDepth, 1, 15);
 		}
 
-		std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable) : ";
+		std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable, 3: Humain) : ";
 		std::cin >> yellow;
 
 		if (yellow == 1 || yellow == 2)
 		{
-			std::cout << "\nAttention, plus le chiffre est grand, plus le temps de calcul est long !\nChoisis la profondeur de recherche pour le joueur Rouge (1-15) : ";
+			std::cout << "\nAttention, plus le chiffre est grand, plus le temps de calcul est long !\nChoisis la profondeur de recherche pour le joueur Jaune (1-15) : ";
 			std::cin >> yellowDepth;
 
 			yellowDepth = std::clamp(yellowDepth, 1, 15);
