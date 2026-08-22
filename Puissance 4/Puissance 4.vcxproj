@@ -146,6 +146,7 @@
     <ClCompile Include="MinMaxIA.cpp" />
     <ClCompile Include="Puissance 4.cpp" />
     <ClCompile Include="RandomIA.cpp" />
+    <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BestMinMax.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="RandomIA.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
+    <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Puissance 41.rc" />
