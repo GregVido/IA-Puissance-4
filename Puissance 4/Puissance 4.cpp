@@ -8,6 +8,7 @@
 #include "RandomIA.h"
 #include "MinMaxIA.h"
 #include "BestMinMax.h"
+#include "User.h"
 #include "IA.h"
 
 #include <chrono>
@@ -29,6 +30,8 @@ IA* getIABYType(int type, int depth)
 		return new MinMaxIA(depth);
 	case 2:
 		return new BestMinMax(depth);
+	case 3:
+		return new User();
 	default:
 		return nullptr;
 	}
@@ -61,7 +64,7 @@ int main()
 		int redDepth = 1;
 		int yellowDepth = 1;
 
-		std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable) : ";
+		std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable, 3: Humain) : ";
 		std::cin >> red;
 
 		if (red == 1 || red == 2)
