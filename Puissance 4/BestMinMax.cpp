@@ -168,8 +168,7 @@ Move BestMinMax::getMove(Board board, Box player)
 	const int progressionDepth =
 		_depth + playedMoves / MOVES_PER_EXTRA_DEPTH;
 
-	const int initialDepth =
-		std::min(_depth, remainingMoves);
+	const int initialDepth = 1;
 
 	const int targetDepth =
 		std::min(remainingMoves, progressionDepth);
