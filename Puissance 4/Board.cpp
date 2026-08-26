@@ -237,7 +237,7 @@ void Board::draw() const
 			switch (box)
 			{
 			case Box::EMPTY:
-				std::cout << ".";
+				std::cout << " ";
 				break;
 
 			case Box::RED:
