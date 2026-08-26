@@ -241,7 +241,7 @@ void Board::draw() const
 				break;
 
 			case Box::RED:
-				std::cout << "\033[31mR\033[0m";
+				std::cout << "\033[31m●\033[0m";
 				break;
 
 			case Box::YELLOW:
