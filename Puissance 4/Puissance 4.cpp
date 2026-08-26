@@ -56,6 +56,9 @@ int main()
 
 	setIcon();
 
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
+
 	while (loop) {
 		std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
 
