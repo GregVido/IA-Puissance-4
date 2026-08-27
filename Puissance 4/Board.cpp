@@ -223,45 +223,127 @@ Board Board::duplicate() const
 
 void Board::draw() const
 {
+	constexpr const char* RESET = "\033[0m";
+	constexpr const char* BOLD = "\033[1m";
+
+	// Couleurs RGB
+	constexpr const char* BLUE = "\033[38;2;45;120;255m";
+	constexpr const char* BLUE_BG = "\033[48;2;30;90;210m";
+
+	constexpr const char* RED = "\033[38;2;255;65;65m";
+	constexpr const char* YELLOW = "\033[38;2;255;215;40m";
+	constexpr const char* EMPTY = "\033[38;2;220;230;245m";
+
+	constexpr const char* LAST_MOVE = "\033[1;97m";
+
+	// Détermine la position du dernier coup
+	int lastColumn = -1;
+	int lastRow = -1;
+
+	if (moveCount > 0)
+	{
+		lastColumn = static_cast<int>(historyColumns[moveCount - 1]);
+		lastRow = HEIGHT - static_cast<int>(heights[lastColumn]);
+	}
+
+	std::cout << '\n';
+
+	// Numéros des colonnes
+	std::cout << "   ";
+
+	for (int column = 0; column < WIDTH; ++column)
+	{
+		std::cout
+			<< BOLD
+			<< "\033[38;2;170;190;220m"
+			<< " " << column + 1 << "  "
+			<< RESET;
+	}
+
+	std::cout << "\n\n";
+
+	// Bord supérieur
+	std::cout << BLUE << "  ╔";
+
+	for (int column = 0; column < WIDTH; ++column)
+	{
+		std::cout << "═══";
+
+		if (column < WIDTH - 1)
+			std::cout << "╦";
+	}
+
+	std::cout << "╗" << RESET << '\n';
+
 	for (int row = 0; row < HEIGHT; ++row)
 	{
-		for (int column = 0; column < WIDTH; ++column)
-			std::cout << "----";
-
-		std::cout << "-\n| ";
+		std::cout << BLUE << "  ║" << RESET;
 
 		for (int column = 0; column < WIDTH; ++column)
 		{
 			const Box box = grid[row * WIDTH + column];
+			const bool isLastMove =
+				row == lastRow &&
+				column == lastColumn;
+
+			std::cout << BLUE_BG << " ";
 
 			switch (box)
 			{
 			case Box::EMPTY:
-				std::cout << " ";
+				std::cout << EMPTY << "○";
 				break;
 
 			case Box::RED:
-				std::cout << "\033[31m●\033[0m";
+				if (isLastMove)
+					std::cout << BOLD << RED << "●";
+				else
+					std::cout << RED << "●";
 				break;
 
 			case Box::YELLOW:
-				std::cout << "\033[33m●\033[0m";
+				if (isLastMove)
+					std::cout << BOLD << YELLOW << "●";
+				else
+					std::cout << YELLOW << "●";
 				break;
 			}
 
-			std::cout << " | ";
+			std::cout << BLUE_BG << " " << RESET;
+
+			if (column < WIDTH - 1)
+				std::cout << BLUE << "║" << RESET;
 		}
 
-		std::cout << '\n';
+		std::cout << BLUE << "║" << RESET << '\n';
+
+		// Séparation entre les lignes
+		if (row < HEIGHT - 1)
+		{
+			std::cout << BLUE << "  ╠";
+
+			for (int column = 0; column < WIDTH; ++column)
+			{
+				std::cout << "═══";
+
+				if (column < WIDTH - 1)
+					std::cout << "╬";
+			}
+
+			std::cout << "╣" << RESET << '\n';
+		}
 	}
 
-	for (int column = 0; column < WIDTH; ++column)
-		std::cout << "----";
-
-	std::cout << "-\n  ";
+	// Bord inférieur
+	std::cout << BLUE << "  ╚";
 
 	for (int column = 0; column < WIDTH; ++column)
-		std::cout << column + 1 << "   ";
+	{
+		std::cout << "═══";
 
-	std::cout << '\n';
+		if (column < WIDTH - 1)
+			std::cout << "╩";
+	}
+
+	std::cout << "╝" << RESET << "\n\n";
 }
