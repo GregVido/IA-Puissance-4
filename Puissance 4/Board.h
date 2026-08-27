@@ -75,7 +75,7 @@ public:
 	}
 
 	Board duplicate() const;
-	void draw() const;
+	void draw(int selectedColumn = -1) const;
 
 	int getWidth() const noexcept
 	{

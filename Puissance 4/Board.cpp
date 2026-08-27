@@ -222,7 +222,7 @@ Board Board::duplicate() const
 	return *this;
 }
 
-void Board::draw() const
+void Board::draw(int selectedColumn) const
 {
 	constexpr const char* RESET = "\033[0m";
 	constexpr const char* BOLD = "\033[1m";
@@ -472,12 +472,42 @@ void Board::draw() const
 
 	for (int column = 0; column < WIDTH; ++column)
 	{
-		std::cout
-			<< BOLD
-			<< "\033[38;2;170;190;220m"
-			<< " " << column + 1 << "  "
-			<< RESET;
+		if (column == selectedColumn)
+		{
+			std::cout
+				<< BOLD
+				<< "\033[48;2;45;120;255m" // fond bleu clair
+				<< "\033[38;2;255;255;255m"
+				<< " " << column + 1 << "  "
+				<< RESET;
+		}
+		else
+		{
+			std::cout
+				<< BOLD
+				<< "\033[38;2;170;190;220m"
+				<< " " << column + 1 << "  "
+				<< RESET;
+		}
 	}
 
-	std::cout << "\n\n";
+	std::cout << "\n";
+
+	// Petite flèche sous la colonne sélectionnée
+	if (selectedColumn >= 0)
+	{
+		std::cout << "   ";
+
+		for (int column = 0; column < WIDTH; ++column)
+		{
+			if (column == selectedColumn)
+				std::cout << "\033[38;2;80;160;255m  ▲ \033[0m";
+			else
+				std::cout << "    ";
+		}
+
+		std::cout << '\n';
+	}
+
+	std::cout << '\n';
 }
