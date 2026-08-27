@@ -474,26 +474,29 @@ void Board::draw(int selectedColumn) const
 	{
 		if (column == selectedColumn)
 		{
+			// 3 caractères colorés = exactement la largeur d'une case
 			std::cout
 				<< BOLD
-				<< "\033[48;2;45;120;255m" // fond bleu clair
+				<< "\033[48;2;45;120;255m"
 				<< "\033[38;2;255;255;255m"
-				<< " " << column + 1 << "  "
-				<< RESET;
+				<< " " << column + 1 << " "
+				<< RESET
+				<< " "; // espace correspondant à la bordure
 		}
 		else
 		{
 			std::cout
 				<< BOLD
 				<< "\033[38;2;170;190;220m"
-				<< " " << column + 1 << "  "
-				<< RESET;
+				<< " " << column + 1 << " "
+				<< RESET
+				<< " ";
 		}
 	}
 
-	std::cout << "\n";
+	std::cout << '\n';
 
-	// Petite flèche sous la colonne sélectionnée
+	// Flèche sous la colonne
 	if (selectedColumn >= 0)
 	{
 		std::cout << "   ";
@@ -501,9 +504,17 @@ void Board::draw(int selectedColumn) const
 		for (int column = 0; column < WIDTH; ++column)
 		{
 			if (column == selectedColumn)
-				std::cout << "\033[38;2;80;160;255m  ▲ \033[0m";
+			{
+				std::cout
+					<< "\033[38;2;80;160;255m"
+					<< " ▲ "
+					<< RESET
+					<< " ";
+			}
 			else
+			{
 				std::cout << "    ";
+			}
 		}
 
 		std::cout << '\n';
