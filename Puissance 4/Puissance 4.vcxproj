@@ -152,6 +152,7 @@
     <ClInclude Include="BestMinMax.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Box.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="IA.h" />
     <ClInclude Include="MinMaxIA.h" />
     <ClInclude Include="Move.h" />

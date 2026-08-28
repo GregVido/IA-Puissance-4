@@ -1,4 +1,3 @@
-#include <iostream>
 #include <memory>
 
 #include <algorithm>
@@ -10,17 +9,18 @@
 #include "BestMinMax.h"
 #include "User.h"
 #include "IA.h"
+#include "Console.h"
 
 #include <chrono>
 #include <thread>
-
-#include <limits>
 
 #define NOMINMAX
 #include <Windows.h>
 #include "resource.h"
 #include <conio.h>
 #include <array>
+
+#include <limits>
 
 IA* getIABYType(int type, int depth)
 {
@@ -49,73 +49,6 @@ void setIcon() {
 
 	SendMessage(console, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
 	SendMessage(console, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
-}
-
-int getConsoleWidth()
-{
-	CONSOLE_SCREEN_BUFFER_INFO csbi{};
-
-	if (GetConsoleScreenBufferInfo(
-		GetStdHandle(STD_OUTPUT_HANDLE),
-		&csbi))
-	{
-		return csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	}
-
-	return 80;
-}
-
-int getUtf8VisualLength(const std::string& text)
-{
-	int length = 0;
-
-	for (unsigned char c : text)
-	{
-		// Un caractère UTF-8 commence lorsque les deux bits de poids fort
-		// ne sont pas "10".
-		if ((c & 0xC0) != 0x80)
-			++length;
-	}
-
-	return length;
-}
-
-void printCentered(const std::string& text)
-{
-	const int consoleWidth = getConsoleWidth();
-
-	const int textWidth =
-		getUtf8VisualLength(text);
-
-	const int padding =
-		std::max(
-			0,
-			(consoleWidth - textWidth) / 2
-		);
-
-	std::cout
-		<< std::string(padding, ' ')
-		<< text
-		<< '\n';
-}
-
-void printCenteredColored(
-	const std::string& text,
-	const char* style = "",
-	const char* reset = "\033[0m")
-{
-	const int consoleWidth = getConsoleWidth();
-	const int textWidth = getUtf8VisualLength(text);
-
-	const int padding =
-		std::max(0, (consoleWidth - textWidth) / 2);
-
-	std::cout
-		<< std::string(padding, ' ')
-		<< style
-		<< text
-		<< reset
-		<< '\n';
 }
 
 void printTitle()

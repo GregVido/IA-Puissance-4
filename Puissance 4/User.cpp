@@ -1,7 +1,10 @@
 #include "User.h"
+#include "Console.h"
 
 #include <conio.h>
 #include <iostream>
+
+
 
 Move User::getMove(Board board, Box player)
 {
@@ -30,9 +33,7 @@ Move User::getMove(Board board, Box player)
 		// Affiche la grille avec la colonne sélectionnée
 		board.draw(selectedColumn);
 
-		std::cout
-			<< "← → : choisir une colonne"
-			<< "    Entrée : jouer\n";
+		printCentered("← → : choisir une colonne    Entrée : jouer\n");
 
 		const int key = _getch();
 
