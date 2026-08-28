@@ -83,6 +83,28 @@ int getUtf8VisualLength(const std::string& text)
 void printCentered(const std::string& text)
 {
 	const int consoleWidth = getConsoleWidth();
+
+	const int textWidth =
+		getUtf8VisualLength(text);
+
+	const int padding =
+		std::max(
+			0,
+			(consoleWidth - textWidth) / 2
+		);
+
+	std::cout
+		<< std::string(padding, ' ')
+		<< text
+		<< '\n';
+}
+
+void printCenteredColored(
+	const std::string& text,
+	const char* style = "",
+	const char* reset = "\033[0m")
+{
+	const int consoleWidth = getConsoleWidth();
 	const int textWidth = getUtf8VisualLength(text);
 
 	const int padding =
@@ -90,7 +112,9 @@ void printCentered(const std::string& text)
 
 	std::cout
 		<< std::string(padding, ' ')
+		<< style
 		<< text
+		<< reset
 		<< '\n';
 }
 
@@ -130,16 +154,16 @@ int selectIA(const std::string& playerName)
 	int selected = 0;
 
 	constexpr const char* RESET = "\033[0m";
-	constexpr const char* BOLD = "\033[1m";
-
-	constexpr const char* SELECT_BG =
-		"\033[48;2;45;120;255m";
-
-	constexpr const char* SELECT_TEXT =
-		"\033[38;2;255;255;255m";
 
 	constexpr const char* NORMAL_TEXT =
 		"\033[38;2;180;195;220m";
+
+	// Style de la sélection :
+	// gras + fond bleu + texte blanc
+	constexpr const char* SELECT_STYLE =
+		"\033[1m"
+		"\033[48;2;45;120;255m"
+		"\033[38;2;255;255;255m";
 
 	while (true)
 	{
@@ -157,23 +181,23 @@ int selectIA(const std::string& playerName)
 		{
 			if (i == selected)
 			{
-				printCentered(
-					std::string(BOLD) +
-					SELECT_BG +
-					SELECT_TEXT +
-					"  > " +
-					choices[i] +
-					"  <  " +
+				// Le rectangle entier est centré
+				const std::string text =
+					"  > " + choices[i] + " <  ";
+
+				printCenteredColored(
+					text,
+					SELECT_STYLE,
 					RESET
 				);
 			}
 			else
 			{
-				printCentered(
-					std::string(NORMAL_TEXT) +
-					"    " +
-					choices[i] +
-					"     " +
+				// On centre uniquement le vrai texte,
+				// sans compter les codes ANSI
+				printCenteredColored(
+					choices[i],
+					NORMAL_TEXT,
 					RESET
 				);
 			}
@@ -187,31 +211,33 @@ int selectIA(const std::string& playerName)
 
 		const int key = _getch();
 
-		// Touches spéciales Windows
 		if (key == 0 || key == 224)
 		{
 			const int arrow = _getch();
 
-			// ↑
+			// Flèche haut
 			if (arrow == 72)
 			{
 				--selected;
 
 				if (selected < 0)
+				{
 					selected =
-					static_cast<int>(choices.size()) - 1;
+						static_cast<int>(choices.size()) - 1;
+				}
 			}
 
-			// ↓
+			// Flèche bas
 			else if (arrow == 80)
 			{
 				++selected;
 
 				if (selected >= static_cast<int>(choices.size()))
+				{
 					selected = 0;
+				}
 			}
 		}
-
 		// Entrée
 		else if (key == 13)
 		{
