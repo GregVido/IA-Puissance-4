@@ -4,6 +4,10 @@
 #include <iostream>
 #include <utility>
 
+#include <Windows.h>
+#include <algorithm>
+#include <string>
+
 namespace
 {
 	constexpr std::array<int, WIDTH> MOVE_ORDER = { 3, 2, 4, 1, 5, 0, 6 };
@@ -231,16 +235,58 @@ void Board::draw(int selectedColumn) const
 	constexpr const char* BLUE = "\033[38;2;45;120;255m";
 	constexpr const char* BLUE_BG = "\033[48;2;30;90;210m";
 
-	// Fond utilisé pour les 4 pions gagnants
+	// Fond utilisé pour les pions gagnants
 	constexpr const char* WIN_BG = "\033[48;2;90;180;255m";
 
 	constexpr const char* RED = "\033[38;2;255;65;65m";
 	constexpr const char* YELLOW = "\033[38;2;255;215;40m";
 	constexpr const char* EMPTY = "\033[38;2;220;230;245m";
 
-	// ---------------------------------------------------------
-	// Recherche des cases faisant partie de la combinaison gagnante
-	// ---------------------------------------------------------
+	// =========================================================
+	// Calcul du centrage horizontal
+	// =========================================================
+
+	// ╔═══╦═══╦═══╦═══╦═══╦═══╦═══╗
+	//
+	// 1 caractère gauche
+	// + 7 * 3 caractères de case
+	// + 6 séparateurs
+	// + 1 caractère droit
+	constexpr int GRID_WIDTH =
+		1 +
+		(WIDTH * 3) +
+		(WIDTH - 1) +
+		1;
+
+	int consoleWidth = GRID_WIDTH;
+
+	CONSOLE_SCREEN_BUFFER_INFO csbi{};
+
+	if (GetConsoleScreenBufferInfo(
+		GetStdHandle(STD_OUTPUT_HANDLE),
+		&csbi))
+	{
+		consoleWidth =
+			csbi.srWindow.Right -
+			csbi.srWindow.Left +
+			1;
+	}
+
+	const int leftPadding =
+		max(
+			0,
+			(consoleWidth - GRID_WIDTH) / 2
+		);
+
+	const std::string indent(
+		static_cast<std::size_t>(leftPadding),
+		' '
+	);
+
+	// =========================================================
+	// Recherche des cases faisant partie de la combinaison
+	// gagnante
+	// =========================================================
 
 	std::array<bool, WIDTH* HEIGHT> winningCells{};
 	winningCells.fill(false);
@@ -253,22 +299,29 @@ void Board::draw(int selectedColumn) const
 	if (moveCount > 0)
 	{
 		lastColumn =
-			static_cast<int>(historyColumns[moveCount - 1]);
+			static_cast<int>(
+				historyColumns[moveCount - 1]
+				);
 
 		lastRow =
-			HEIGHT - static_cast<int>(heights[lastColumn]);
+			HEIGHT -
+			static_cast<int>(
+				heights[lastColumn]
+				);
 	}
 
-	if (winner != Box::EMPTY &&
+	if (
+		winner != Box::EMPTY &&
 		lastColumn >= 0 &&
-		lastRow >= 0)
+		lastRow >= 0
+		)
 	{
 		// horizontal, vertical, diagonale \, diagonale /
 		constexpr int directions[4][2] =
 		{
-			{ 0, 1 },
-			{ 1, 0 },
-			{ 1, 1 },
+			{ 0,  1 },
+			{ 1,  0 },
+			{ 1,  1 },
 			{ 1, -1 }
 		};
 
@@ -277,7 +330,11 @@ void Board::draw(int selectedColumn) const
 			const int dr = direction[0];
 			const int dc = direction[1];
 
-			std::array<std::pair<int, int>, WIDTH + HEIGHT> cells{};
+			std::array<
+				std::pair<int, int>,
+				WIDTH + HEIGHT
+			> cells{};
+
 			int cellCount = 0;
 
 			// -------------------------------------------------
@@ -289,19 +346,31 @@ void Board::draw(int selectedColumn) const
 
 			while (true)
 			{
-				const int previousRow = startRow - dr;
-				const int previousColumn = startColumn - dc;
+				const int previousRow =
+					startRow - dr;
 
-				if (previousRow < 0 ||
+				const int previousColumn =
+					startColumn - dc;
+
+				if (
+					previousRow < 0 ||
 					previousRow >= HEIGHT ||
 					previousColumn < 0 ||
-					previousColumn >= WIDTH)
+					previousColumn >= WIDTH
+					)
 				{
 					break;
 				}
 
-				if (grid[previousRow * WIDTH + previousColumn] != winner)
+				if (
+					grid[
+						previousRow * WIDTH +
+							previousColumn
+					] != winner
+					)
+				{
 					break;
+				}
 
 				startRow = previousRow;
 				startColumn = previousColumn;
@@ -319,9 +388,11 @@ void Board::draw(int selectedColumn) const
 				row < HEIGHT &&
 				column >= 0 &&
 				column < WIDTH &&
-				grid[row * WIDTH + column] == winner)
+				grid[row * WIDTH + column] == winner
+				)
 			{
-				cells[cellCount++] = { row, column };
+				cells[cellCount++] =
+				{ row, column };
 
 				row += dr;
 				column += dc;
@@ -333,12 +404,20 @@ void Board::draw(int selectedColumn) const
 
 			if (cellCount >= 4)
 			{
-				for (int i = 0; i < cellCount; ++i)
+				for (
+					int i = 0;
+					i < cellCount;
+					++i
+					)
 				{
-					const auto [winRow, winColumn] = cells[i];
+					const auto [
+						winRow,
+						winColumn
+					] = cells[i];
 
 					winningCells[
-						winRow * WIDTH + winColumn
+						winRow * WIDTH +
+							winColumn
 					] = true;
 				}
 			}
@@ -351,7 +430,10 @@ void Board::draw(int selectedColumn) const
 	// Bord supérieur
 	// =========================================================
 
-	std::cout << BLUE << "  ╔";
+	std::cout
+		<< indent
+		<< BLUE
+		<< "╔";
 
 	for (int column = 0; column < WIDTH; ++column)
 	{
@@ -361,7 +443,10 @@ void Board::draw(int selectedColumn) const
 			std::cout << "╦";
 	}
 
-	std::cout << "╗" << RESET << '\n';
+	std::cout
+		<< "╗"
+		<< RESET
+		<< '\n';
 
 	// =========================================================
 	// Grille
@@ -369,13 +454,20 @@ void Board::draw(int selectedColumn) const
 
 	for (int row = 0; row < HEIGHT; ++row)
 	{
-		std::cout << BLUE << "  ║" << RESET;
+		std::cout
+			<< indent
+			<< BLUE
+			<< "║"
+			<< RESET;
 
 		for (int column = 0; column < WIDTH; ++column)
 		{
-			const int index = row * WIDTH + column;
+			const int index =
+				row * WIDTH +
+				column;
 
-			const Box box = grid[index];
+			const Box box =
+				grid[index];
 
 			const bool isLastMove =
 				row == lastRow &&
@@ -384,49 +476,99 @@ void Board::draw(int selectedColumn) const
 			const bool isWinningCell =
 				winningCells[index];
 
-			// Fond différent si la case fait partie de la victoire
+			// Fond différent si la case fait partie
+			// de la victoire
 			if (isWinningCell)
-				std::cout << WIN_BG << " ";
+			{
+				std::cout
+					<< WIN_BG
+					<< " ";
+			}
 			else
-				std::cout << BLUE_BG << " ";
+			{
+				std::cout
+					<< BLUE_BG
+					<< " ";
+			}
 
 			switch (box)
 			{
 			case Box::EMPTY:
-				std::cout << EMPTY << "○";
+				std::cout
+					<< EMPTY
+					<< "○";
 				break;
 
 			case Box::RED:
-				if (isWinningCell)
-					std::cout << BOLD << RED << "●";
-				else if (isLastMove)
-					std::cout << BOLD << RED << "●";
+				if (
+					isWinningCell ||
+					isLastMove
+					)
+				{
+					std::cout
+						<< BOLD
+						<< RED
+						<< "●";
+				}
 				else
-					std::cout << RED << "●";
+				{
+					std::cout
+						<< RED
+						<< "●";
+				}
 
 				break;
 
 			case Box::YELLOW:
-				if (isWinningCell)
-					std::cout << BOLD << YELLOW << "●";
-				else if (isLastMove)
-					std::cout << BOLD << YELLOW << "●";
+				if (
+					isWinningCell ||
+					isLastMove
+					)
+				{
+					std::cout
+						<< BOLD
+						<< YELLOW
+						<< "●";
+				}
 				else
-					std::cout << YELLOW << "●";
+				{
+					std::cout
+						<< YELLOW
+						<< "●";
+				}
 
 				break;
 			}
 
 			if (isWinningCell)
-				std::cout << WIN_BG << " " << RESET;
+			{
+				std::cout
+					<< WIN_BG
+					<< " "
+					<< RESET;
+			}
 			else
-				std::cout << BLUE_BG << " " << RESET;
+			{
+				std::cout
+					<< BLUE_BG
+					<< " "
+					<< RESET;
+			}
 
 			if (column < WIDTH - 1)
-				std::cout << BLUE << "║" << RESET;
+			{
+				std::cout
+					<< BLUE
+					<< "║"
+					<< RESET;
+			}
 		}
 
-		std::cout << BLUE << "║" << RESET << '\n';
+		std::cout
+			<< BLUE
+			<< "║"
+			<< RESET
+			<< '\n';
 
 		// =====================================================
 		// Séparations
@@ -434,9 +576,16 @@ void Board::draw(int selectedColumn) const
 
 		if (row < HEIGHT - 1)
 		{
-			std::cout << BLUE << "  ╠";
+			std::cout
+				<< indent
+				<< BLUE
+				<< "╠";
 
-			for (int column = 0; column < WIDTH; ++column)
+			for (
+				int column = 0;
+				column < WIDTH;
+				++column
+				)
 			{
 				std::cout << "═══";
 
@@ -444,7 +593,10 @@ void Board::draw(int selectedColumn) const
 					std::cout << "╬";
 			}
 
-			std::cout << "╣" << RESET << '\n';
+			std::cout
+				<< "╣"
+				<< RESET
+				<< '\n';
 		}
 	}
 
@@ -452,7 +604,10 @@ void Board::draw(int selectedColumn) const
 	// Bord inférieur
 	// =========================================================
 
-	std::cout << BLUE << "  ╚";
+	std::cout
+		<< indent
+		<< BLUE
+		<< "╚";
 
 	for (int column = 0; column < WIDTH; ++column)
 	{
@@ -462,44 +617,63 @@ void Board::draw(int selectedColumn) const
 			std::cout << "╩";
 	}
 
-	std::cout << "╝" << RESET << "\n\n";
+	std::cout
+		<< "╝"
+		<< RESET
+		<< "\n\n";
 
 	// =========================================================
 	// Numéros des colonnes
 	// =========================================================
 
-	std::cout << "   ";
+	// +1 pour ignorer visuellement la bordure gauche ║
+	std::cout
+		<< indent
+		<< " ";
 
 	for (int column = 0; column < WIDTH; ++column)
 	{
 		if (column == selectedColumn)
 		{
-			// 3 caractères colorés = exactement la largeur d'une case
 			std::cout
 				<< BOLD
 				<< "\033[48;2;45;120;255m"
 				<< "\033[38;2;255;255;255m"
-				<< " " << column + 1 << " "
-				<< RESET
-				<< " "; // espace correspondant à la bordure
+				<< " "
+				<< column + 1
+				<< " "
+				<< RESET;
+
+			// Espace correspondant à la bordure
+			if (column < WIDTH - 1)
+				std::cout << " ";
 		}
 		else
 		{
 			std::cout
 				<< BOLD
 				<< "\033[38;2;170;190;220m"
-				<< " " << column + 1 << " "
-				<< RESET
-				<< " ";
+				<< " "
+				<< column + 1
+				<< " "
+				<< RESET;
+
+			if (column < WIDTH - 1)
+				std::cout << " ";
 		}
 	}
 
 	std::cout << '\n';
 
-	// Flèche sous la colonne
+	// =========================================================
+	// Flèche sous la colonne sélectionnée
+	// =========================================================
+
 	if (selectedColumn >= 0)
 	{
-		std::cout << "   ";
+		std::cout
+			<< indent
+			<< " ";
 
 		for (int column = 0; column < WIDTH; ++column)
 		{
@@ -508,13 +682,15 @@ void Board::draw(int selectedColumn) const
 				std::cout
 					<< "\033[38;2;80;160;255m"
 					<< " ▲ "
-					<< RESET
-					<< " ";
+					<< RESET;
 			}
 			else
 			{
-				std::cout << "    ";
+				std::cout << "   ";
 			}
+
+			if (column < WIDTH - 1)
+				std::cout << " ";
 		}
 
 		std::cout << '\n';
