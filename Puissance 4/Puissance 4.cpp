@@ -49,6 +49,56 @@ void setIcon() {
 	SendMessage(console, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
 }
 
+int getConsoleWidth()
+{
+	CONSOLE_SCREEN_BUFFER_INFO csbi{};
+
+	if (GetConsoleScreenBufferInfo(
+		GetStdHandle(STD_OUTPUT_HANDLE),
+		&csbi))
+	{
+		return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	}
+
+	return 80;
+}
+
+void printCentered(const std::string& text)
+{
+	const int consoleWidth = getConsoleWidth();
+
+	const int padding =
+		std::max(0, (consoleWidth - static_cast<int>(text.length())) / 2);
+
+	std::cout
+		<< std::string(padding, ' ')
+		<< text
+		<< '\n';
+}
+
+void printTitle()
+{
+	constexpr const char* BLUE = "\033[38;2;45;120;255m";
+	constexpr const char* BOLD = "\033[1m";
+	constexpr const char* RESET = "\033[0m";
+
+	std::cout << '\n';
+	std::cout << BLUE << BOLD;
+
+	printCentered(R"(██████╗ ██╗   ██╗██╗███████╗███████╗ █████╗ ███╗   ██╗ ██████╗███████╗    ██╗  ██╗)");
+	printCentered(R"(██╔══██╗██║   ██║██║██╔════╝██╔════╝██╔══██╗████╗  ██║██╔════╝██╔════╝    ██║  ██║)");
+	printCentered(R"(██████╔╝██║   ██║██║███████╗███████╗███████║██╔██╗ ██║██║     █████╗      ███████║)");
+	printCentered(R"(██╔═══╝ ██║   ██║██║╚════██║╚════██║██╔══██║██║╚██╗██║██║     ██╔══╝      ╚════██║)");
+	printCentered(R"(██║     ╚██████╔╝██║███████║███████║██║  ██║██║ ╚████║╚██████╗███████╗         ██║)");
+	printCentered(R"(╚═╝      ╚═════╝ ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝         ╚═╝)");
+
+	std::cout << RESET << '\n';
+
+	printCentered("IA - By GregVido");
+
+	std::cout << '\n';
+}
+
 int main()
 {
 	using namespace std::chrono_literals;
@@ -60,7 +110,7 @@ int main()
 	SetConsoleCP(CP_UTF8);
 
 	while (loop) {
-		std::cout << "Puissance 4 - IA - By GregVido" << "\n\n";
+		printTitle();
 
 		int red = 0;
 		int yellow = 0;
