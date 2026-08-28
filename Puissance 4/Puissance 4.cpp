@@ -274,8 +274,7 @@ int main()
 			redDepth = std::clamp(redDepth, 1, 15);
 		}
 
-		std::cout << "Choisis le type d'IA pour le joueur Jaune (0: Facile, 1: Forte, 2: Imbattable, 3: Humain) : ";
-		std::cin >> yellow;
+		yellow = selectIA("Jaune");
 
 		if (yellow == 1 || yellow == 2)
 		{
