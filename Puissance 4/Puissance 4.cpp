@@ -63,12 +63,28 @@ int getConsoleWidth()
 	return 80;
 }
 
+int getUtf8VisualLength(const std::string& text)
+{
+	int length = 0;
+
+	for (unsigned char c : text)
+	{
+		// Un caractère UTF-8 commence lorsque les deux bits de poids fort
+		// ne sont pas "10".
+		if ((c & 0xC0) != 0x80)
+			++length;
+	}
+
+	return length;
+}
+
 void printCentered(const std::string& text)
 {
 	const int consoleWidth = getConsoleWidth();
+	const int textWidth = getUtf8VisualLength(text);
 
 	const int padding =
-		std::max(0, (consoleWidth - static_cast<int>(text.length())) / 2);
+		std::max(0, (consoleWidth - textWidth) / 2);
 
 	std::cout
 		<< std::string(padding, ' ')
