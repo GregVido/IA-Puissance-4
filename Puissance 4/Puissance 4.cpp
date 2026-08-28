@@ -19,6 +19,8 @@
 #define NOMINMAX
 #include <Windows.h>
 #include "resource.h"
+#include <conio.h>
+#include <array>
 
 IA* getIABYType(int type, int depth)
 {
@@ -115,6 +117,109 @@ void printTitle()
 	std::cout << '\n';
 }
 
+int selectIA(const std::string& playerName)
+{
+	const std::array<std::string, 4> choices =
+	{
+		"Facile",
+		"Forte",
+		"Imbattable",
+		"Humain"
+	};
+
+	int selected = 0;
+
+	constexpr const char* RESET = "\033[0m";
+	constexpr const char* BOLD = "\033[1m";
+
+	constexpr const char* SELECT_BG =
+		"\033[48;2;45;120;255m";
+
+	constexpr const char* SELECT_TEXT =
+		"\033[38;2;255;255;255m";
+
+	constexpr const char* NORMAL_TEXT =
+		"\033[38;2;180;195;220m";
+
+	while (true)
+	{
+		system("cls");
+
+		printTitle();
+
+		printCentered(
+			"Choisis le joueur " + playerName
+		);
+
+		std::cout << '\n';
+
+		for (int i = 0; i < static_cast<int>(choices.size()); ++i)
+		{
+			if (i == selected)
+			{
+				printCentered(
+					std::string(BOLD) +
+					SELECT_BG +
+					SELECT_TEXT +
+					"  > " +
+					choices[i] +
+					"  <  " +
+					RESET
+				);
+			}
+			else
+			{
+				printCentered(
+					std::string(NORMAL_TEXT) +
+					"    " +
+					choices[i] +
+					"     " +
+					RESET
+				);
+			}
+		}
+
+		std::cout << '\n';
+
+		printCentered(
+			"↑ / ↓ pour naviguer - Entrée pour sélectionner"
+		);
+
+		const int key = _getch();
+
+		// Touches spéciales Windows
+		if (key == 0 || key == 224)
+		{
+			const int arrow = _getch();
+
+			// ↑
+			if (arrow == 72)
+			{
+				--selected;
+
+				if (selected < 0)
+					selected =
+					static_cast<int>(choices.size()) - 1;
+			}
+
+			// ↓
+			else if (arrow == 80)
+			{
+				++selected;
+
+				if (selected >= static_cast<int>(choices.size()))
+					selected = 0;
+			}
+		}
+
+		// Entrée
+		else if (key == 13)
+		{
+			return selected;
+		}
+	}
+}
+
 int main()
 {
 	using namespace std::chrono_literals;
@@ -133,8 +238,7 @@ int main()
 		int redDepth = 1;
 		int yellowDepth = 1;
 
-		std::cout << "Choisis le type d'IA pour le joueur Rouge (0: Facile, 1: Forte, 2: Imbattable, 3: Humain) : ";
-		std::cin >> red;
+		red = selectIA("Rouge");
 
 		if (red == 1 || red == 2)
 		{
