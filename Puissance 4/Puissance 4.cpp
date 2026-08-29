@@ -254,12 +254,7 @@ int main()
 		red = selectIA("Rouge");
 
 		if (red == 1 || red == 2)
-		{
-			std::cout << "\nAttention, plus le chiffre est grand, plus le temps de calcul est long !\nChoisis la profondeur de recherche pour le joueur Rouge (1-15) : ";
-			std::cin >> redDepth;
-
-			redDepth = std::clamp(redDepth, 1, 15);
-		}
+			redDepth = selectDepth("Rouge");
 
 		yellow = selectIA("Jaune");
 
