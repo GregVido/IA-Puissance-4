@@ -51,6 +51,7 @@ void setIcon() {
 	SendMessage(console, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
 }
 
+
 void printTitle()
 {
 	constexpr const char* BLUE = "\033[38;2;45;120;255m";
@@ -72,6 +73,59 @@ void printTitle()
 	printCentered("IA - By GregVido");
 
 	std::cout << '\n';
+}
+
+int selectDepth(const std::string& playerName)
+{
+	system("cls");
+	printTitle();
+
+	constexpr const char* WARNING = "\033[38;2;255;190;70m";
+	constexpr const char* NORMAL = "\033[38;2;180;195;220m";
+	constexpr const char* RESET = "\033[0m";
+
+	printCenteredColored(
+		"Attention, plus le chiffre est grand, plus le temps de calcul est long !",
+		WARNING,
+		RESET
+	);
+
+	std::cout << '\n';
+
+	printCenteredColored(
+		"Choisis la profondeur de recherche pour le joueur " +
+		playerName + " (1-15)",
+		NORMAL,
+		RESET
+	);
+
+	std::cout << "\n\n";
+
+	// Récupère la largeur de la console
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(
+		GetStdHandle(STD_OUTPUT_HANDLE),
+		&csbi
+	);
+
+	const int consoleWidth =
+		csbi.srWindow.Right -
+		csbi.srWindow.Left + 1;
+
+	// On place le curseur approximativement au centre
+	COORD pos;
+	pos.X = static_cast<SHORT>(consoleWidth / 2 - 1);
+	pos.Y = csbi.dwCursorPosition.Y;
+
+	SetConsoleCursorPosition(
+		GetStdHandle(STD_OUTPUT_HANDLE),
+		pos
+	);
+
+	int depth = 1;
+	std::cin >> depth;
+
+	return std::clamp(depth, 1, 15);
 }
 
 int selectIA(const std::string& playerName)
