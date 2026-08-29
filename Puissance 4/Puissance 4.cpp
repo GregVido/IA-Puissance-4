@@ -259,12 +259,7 @@ int main()
 		yellow = selectIA("Jaune");
 
 		if (yellow == 1 || yellow == 2)
-		{
-			std::cout << "\nAttention, plus le chiffre est grand, plus le temps de calcul est long !\nChoisis la profondeur de recherche pour le joueur Jaune (1-15) : ";
-			std::cin >> yellowDepth;
-
-			yellowDepth = std::clamp(yellowDepth, 1, 15);
-		}
+			yellowDepth = selectDepth("Jaune");
 
 		const auto start = std::chrono::high_resolution_clock::now();
 		std::this_thread::sleep_for(1s);
