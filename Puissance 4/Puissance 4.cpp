@@ -310,12 +310,20 @@ int main()
 
 		printCentered(winnerText);
 
+		std::cout << "\n\n";
+
 		int continueChoice = 1; // 1 = Oui, 0 = Non
+
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		GetConsoleScreenBufferInfo(
+			GetStdHandle(STD_OUTPUT_HANDLE),
+			&csbi
+		);
+
+		const int selectionY = csbi.dwCursorPosition.Y;
 
 		while (true)
 		{
-			// On récupère la largeur de la console
-			CONSOLE_SCREEN_BUFFER_INFO csbi;
 			GetConsoleScreenBufferInfo(
 				GetStdHandle(STD_OUTPUT_HANDLE),
 				&csbi
@@ -325,44 +333,40 @@ int main()
 				csbi.srWindow.Right -
 				csbi.srWindow.Left + 1;
 
-			const std::string question = "Voulez-vous recommencer ?  ";
+			const std::string question =
+				"Voulez-vous recommencer ?  ";
 
-			const std::string yesText =
-				continueChoice == 1
-				? "[ OUI ]"
-				: "  OUI  ";
-
-			const std::string noText =
-				continueChoice == 0
-				? "[ NON ]"
-				: "  NON  ";
+			const std::string yesText = "  OUI  ";
+			const std::string noText = "  NON  ";
 
 			const std::string fullText =
 				question + yesText + "    " + noText;
 
-			COORD pos;
-
-			pos.X = static_cast<SHORT>(
-				std::max(
-					0,
-					(consoleWidth - static_cast<int>(fullText.size())) / 2
-				)
-				);
-
-			pos.Y = csbi.dwCursorPosition.Y;
-
-			SetConsoleCursorPosition(
-				GetStdHandle(STD_OUTPUT_HANDLE),
-				pos
+			const int startX = std::max(
+				0,
+				(consoleWidth - static_cast<int>(fullText.size())) / 2
 			);
 
-			// Efface l'ancienne ligne avant de réafficher
-			std::cout
-				<< std::string(consoleWidth, ' ');
+			COORD lineStart;
+			lineStart.X = 0;
+			lineStart.Y = static_cast<SHORT>(selectionY);
+
+			// Efface uniquement la ligne de sélection
+			SetConsoleCursorPosition(
+				GetStdHandle(STD_OUTPUT_HANDLE),
+				lineStart
+			);
+
+			std::cout << std::string(consoleWidth, ' ');
+
+			// Replace le curseur au début du texte centré
+			COORD textPos;
+			textPos.X = static_cast<SHORT>(startX);
+			textPos.Y = static_cast<SHORT>(selectionY);
 
 			SetConsoleCursorPosition(
 				GetStdHandle(STD_OUTPUT_HANDLE),
-				pos
+				textPos
 			);
 
 			std::cout << question;
@@ -373,20 +377,20 @@ int main()
 					<< "\033[1m"
 					<< "\033[48;2;45;120;255m"
 					<< "\033[38;2;255;255;255m"
-					<< "  OUI  "
+					<< yesText
 					<< "\033[0m"
 					<< "    "
-					<< "  NON  ";
+					<< noText;
 			}
 			else
 			{
 				std::cout
-					<< "  OUI  "
+					<< yesText
 					<< "    "
 					<< "\033[1m"
 					<< "\033[48;2;45;120;255m"
 					<< "\033[38;2;255;255;255m"
-					<< "  NON  "
+					<< noText
 					<< "\033[0m";
 			}
 
@@ -396,12 +400,10 @@ int main()
 			{
 				const int arrow = _getch();
 
-				// Gauche
-				if (arrow == 75)
+				if (arrow == 75) // Gauche
 					continueChoice = 1;
 
-				// Droite
-				else if (arrow == 77)
+				else if (arrow == 77) // Droite
 					continueChoice = 0;
 			}
 			else if (key == 13) // Entrée
