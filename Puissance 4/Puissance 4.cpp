@@ -310,31 +310,105 @@ int main()
 
 		printCentered(winnerText);
 
-		int continueChoice = 0;
-		std::cout << '\n';
+		int continueChoice = 1; // 1 = Oui, 0 = Non
 
-		printCentered("Voulez-vous recommencer ? (1: Oui, 0: Non)");
+		while (true)
+		{
+			// On récupère la largeur de la console
+			CONSOLE_SCREEN_BUFFER_INFO csbi;
+			GetConsoleScreenBufferInfo(
+				GetStdHandle(STD_OUTPUT_HANDLE),
+				&csbi
+			);
 
-		CONSOLE_SCREEN_BUFFER_INFO csbi;
-		GetConsoleScreenBufferInfo(
-			GetStdHandle(STD_OUTPUT_HANDLE),
-			&csbi
-		);
+			const int consoleWidth =
+				csbi.srWindow.Right -
+				csbi.srWindow.Left + 1;
 
-		const int consoleWidth =
-			csbi.srWindow.Right -
-			csbi.srWindow.Left + 1;
+			const std::string question = "Voulez-vous recommencer ?  ";
 
-		COORD pos;
-		pos.X = static_cast<SHORT>(consoleWidth / 2);
-		pos.Y = csbi.dwCursorPosition.Y;
+			const std::string yesText =
+				continueChoice == 1
+				? "[ OUI ]"
+				: "  OUI  ";
 
-		SetConsoleCursorPosition(
-			GetStdHandle(STD_OUTPUT_HANDLE),
-			pos
-		);
+			const std::string noText =
+				continueChoice == 0
+				? "[ NON ]"
+				: "  NON  ";
 
-		std::cin >> continueChoice;
+			const std::string fullText =
+				question + yesText + "    " + noText;
+
+			COORD pos;
+
+			pos.X = static_cast<SHORT>(
+				std::max(
+					0,
+					(consoleWidth - static_cast<int>(fullText.size())) / 2
+				)
+				);
+
+			pos.Y = csbi.dwCursorPosition.Y;
+
+			SetConsoleCursorPosition(
+				GetStdHandle(STD_OUTPUT_HANDLE),
+				pos
+			);
+
+			// Efface l'ancienne ligne avant de réafficher
+			std::cout
+				<< std::string(consoleWidth, ' ');
+
+			SetConsoleCursorPosition(
+				GetStdHandle(STD_OUTPUT_HANDLE),
+				pos
+			);
+
+			std::cout << question;
+
+			if (continueChoice == 1)
+			{
+				std::cout
+					<< "\033[1m"
+					<< "\033[48;2;45;120;255m"
+					<< "\033[38;2;255;255;255m"
+					<< "  OUI  "
+					<< "\033[0m"
+					<< "    "
+					<< "  NON  ";
+			}
+			else
+			{
+				std::cout
+					<< "  OUI  "
+					<< "    "
+					<< "\033[1m"
+					<< "\033[48;2;45;120;255m"
+					<< "\033[38;2;255;255;255m"
+					<< "  NON  "
+					<< "\033[0m";
+			}
+
+			const int key = _getch();
+
+			if (key == 0 || key == 224)
+			{
+				const int arrow = _getch();
+
+				// Gauche
+				if (arrow == 75)
+					continueChoice = 1;
+
+				// Droite
+				else if (arrow == 77)
+					continueChoice = 0;
+			}
+			else if (key == 13) // Entrée
+			{
+				break;
+			}
+		}
 
 		if (!continueChoice)
 		{
