@@ -130,27 +130,30 @@ int selectDepth(const std::string& playerName)
 
 int selectIA(const std::string& playerName)
 {
-	const std::array<std::string, 4> choices =
-	{
-		"Facile",
-		"Forte",
-		"Imbattable",
-		"Humain"
-	};
-
-	int selected = 0;
-
 	constexpr const char* RESET = "\033[0m";
 
 	constexpr const char* NORMAL_TEXT =
 		"\033[38;2;180;195;220m";
 
-	// Style de la sélection :
-	// gras + fond bleu + texte blanc
+	constexpr const char* CATEGORY_TEXT =
+		"\033[38;2;100;160;255m";
+
 	constexpr const char* SELECT_STYLE =
 		"\033[1m"
 		"\033[48;2;45;120;255m"
 		"\033[38;2;255;255;255m";
+
+	// ==============================
+	// MENU PRINCIPAL : IA / MANUEL
+	// ==============================
+
+	const std::array<std::string, 2> categories =
+	{
+		"IA",
+		"Manuel"
+	};
+
+	int categorySelected = 0;
 
 	while (true)
 	{
@@ -159,18 +162,17 @@ int selectIA(const std::string& playerName)
 		printTitle();
 
 		printCentered(
-			"Choisis le joueur " + playerName
+			"Choisis le type de joueur pour " + playerName
 		);
 
-		std::cout << '\n';
+		std::cout << "\n\n";
 
-		for (int i = 0; i < static_cast<int>(choices.size()); ++i)
+		for (int i = 0; i < static_cast<int>(categories.size()); ++i)
 		{
-			if (i == selected)
+			if (i == categorySelected)
 			{
-				// Le rectangle entier est centré
 				const std::string text =
-					"  > " + choices[i] + " <  ";
+					"  > " + categories[i] + " <  ";
 
 				printCenteredColored(
 					text,
@@ -180,10 +182,8 @@ int selectIA(const std::string& playerName)
 			}
 			else
 			{
-				// On centre uniquement le vrai texte,
-				// sans compter les codes ANSI
 				printCenteredColored(
-					choices[i],
+					categories[i],
 					NORMAL_TEXT,
 					RESET
 				);
@@ -202,33 +202,131 @@ int selectIA(const std::string& playerName)
 		{
 			const int arrow = _getch();
 
-			// Flèche haut
-			if (arrow == 72)
+			if (arrow == 72) // Haut
 			{
-				--selected;
+				--categorySelected;
 
-				if (selected < 0)
-				{
-					selected =
-						static_cast<int>(choices.size()) - 1;
-				}
+				if (categorySelected < 0)
+					categorySelected =
+					static_cast<int>(categories.size()) - 1;
 			}
-
-			// Flèche bas
-			else if (arrow == 80)
+			else if (arrow == 80) // Bas
 			{
-				++selected;
+				++categorySelected;
 
-				if (selected >= static_cast<int>(choices.size()))
-				{
-					selected = 0;
-				}
+				if (categorySelected >= static_cast<int>(categories.size()))
+					categorySelected = 0;
 			}
 		}
-		// Entrée
-		else if (key == 13)
+		else if (key == 13) // Entrée
 		{
-			return selected;
+			// =========================
+			// MANUEL
+			// =========================
+
+			if (categorySelected == 1)
+			{
+				return 3; // User()
+			}
+
+			// =========================
+			// SOUS-MENU IA
+			// =========================
+
+			const std::array<std::string, 3> iaChoices =
+			{
+				"Facile",
+				"Forte",
+				"Imbattable"
+			};
+
+			int iaSelected = 0;
+
+			while (true)
+			{
+				system("cls");
+
+				printTitle();
+
+				printCenteredColored(
+					"IA",
+					CATEGORY_TEXT,
+					RESET
+				);
+
+				std::cout << '\n';
+
+				printCentered(
+					"Choisis la difficulté pour " + playerName
+				);
+
+				std::cout << "\n\n";
+
+				for (int i = 0;
+					i < static_cast<int>(iaChoices.size());
+					++i)
+				{
+					if (i == iaSelected)
+					{
+						const std::string text =
+							"  > " + iaChoices[i] + " <  ";
+
+						printCenteredColored(
+							text,
+							SELECT_STYLE,
+							RESET
+						);
+					}
+					else
+					{
+						printCenteredColored(
+							iaChoices[i],
+							NORMAL_TEXT,
+							RESET
+						);
+					}
+				}
+
+				std::cout << '\n';
+
+				printCentered(
+					"↑ / ↓ pour naviguer - Entrée pour sélectionner - Échap pour revenir"
+				);
+
+				const int iaKey = _getch();
+
+				if (iaKey == 0 || iaKey == 224)
+				{
+					const int arrow = _getch();
+
+					if (arrow == 72) // Haut
+					{
+						--iaSelected;
+
+						if (iaSelected < 0)
+							iaSelected =
+							static_cast<int>(iaChoices.size()) - 1;
+					}
+					else if (arrow == 80) // Bas
+					{
+						++iaSelected;
+
+						if (iaSelected >= static_cast<int>(iaChoices.size()))
+							iaSelected = 0;
+					}
+				}
+				else if (iaKey == 13) // Entrée
+				{
+					// 0 = Facile
+					// 1 = Forte
+					// 2 = Imbattable
+					return iaSelected;
+				}
+				else if (iaKey == 27) // Échap
+				{
+					break;
+				}
+			}
 		}
 	}
 }
