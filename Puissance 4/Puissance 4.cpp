@@ -298,14 +298,17 @@ int main()
 
 		const Box winner = board.getWinner();
 
-		std::cout
-			<< "Gagnant : "
-			<< (winner == Box::RED
+		const std::string winnerText =
+			"Gagnant : " +
+			std::string(
+				winner == Box::RED
 				? "Rouge"
 				: winner == Box::YELLOW
 				? "Jaune"
-				: "Personne")
-			<< '\n';
+				: "Personne"
+			);
+
+		printCentered(winnerText);
 
 		int continueChoice = 0;
 
