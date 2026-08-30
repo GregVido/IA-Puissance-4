@@ -282,12 +282,13 @@ int main()
 			board.play(move);
 			board.draw();
 
-			std::cout
-				<< "Joueur : "
-				<< (player == Box::RED ? "Rouge" : "Jaune")
-				<< " joue sur la colonne "
-				<< move.column
-				<< '\n';
+			const std::string moveText =
+				"Joueur : " +
+				std::string(player == Box::RED ? "Rouge" : "Jaune") +
+				" joue sur la colonne " +
+				std::to_string(move.column);
+
+			printCentered(moveText);
 
 			board.next();
 		}
