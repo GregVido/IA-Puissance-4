@@ -311,8 +311,29 @@ int main()
 		printCentered(winnerText);
 
 		int continueChoice = 0;
+		std::cout << '\n';
 
-		std::cout << "\nVoulez-vous recommencer ? (1: Oui, 0: Non) : ";
+		printCentered("Voulez-vous recommencer ? (1: Oui, 0: Non)");
+
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		GetConsoleScreenBufferInfo(
+			GetStdHandle(STD_OUTPUT_HANDLE),
+			&csbi
+		);
+
+		const int consoleWidth =
+			csbi.srWindow.Right -
+			csbi.srWindow.Left + 1;
+
+		COORD pos;
+		pos.X = static_cast<SHORT>(consoleWidth / 2);
+		pos.Y = csbi.dwCursorPosition.Y;
+
+		SetConsoleCursorPosition(
+			GetStdHandle(STD_OUTPUT_HANDLE),
+			pos
+		);
+
 		std::cin >> continueChoice;
 
 		if (!continueChoice)
