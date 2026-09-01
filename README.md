@@ -14,7 +14,10 @@
 ## Fonctionnement
 
 <div align="center">
-  <img src="public/choix_rouge.png" alt="Choix de l'IA du jeton rouge" width="700">
+  <img src="public/choix_rouge.png" alt="Choix du type d'IA du jeton rouge" width="700">
+</div>
+<div align="center">
+  <img src="public/choix_rouge_ia.png" alt="Choix de l'IA du jeton rouge" width="700">
 </div>
 
 <br>
