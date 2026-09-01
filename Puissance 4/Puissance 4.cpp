@@ -132,6 +132,10 @@ int selectIA(const std::string& playerName)
 {
 	constexpr const char* RESET = "\033[0m";
 
+	constexpr const char* RED = "\033[38;2;255;65;65m";
+	constexpr const char* YELLOW = "\033[38;2;255;215;40m";
+	constexpr const char* EMPTY = "\033[38;2;220;230;245m";
+
 	constexpr const char* NORMAL_TEXT =
 		"\033[38;2;180;195;220m";
 
@@ -161,9 +165,12 @@ int selectIA(const std::string& playerName)
 
 		printTitle();
 
-		printCentered(
-			"Choisis le type de joueur pour " + playerName
-		);
+		if (playerName == "Rouge")
+			printCenteredColored(
+				"Joueur Rouge",
+				RED,
+				RESET
+			);
 
 		std::cout << "\n\n";
 
