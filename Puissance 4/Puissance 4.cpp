@@ -171,6 +171,12 @@ int selectIA(const std::string& playerName)
 				RED,
 				RESET
 			);
+		else if (playerName == "Jaune")
+			printCenteredColored(
+				"Joueur Jaune",
+				YELLOW,
+				RESET
+			);
 
 		std::cout << "\n\n";
 
