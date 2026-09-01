@@ -23,16 +23,17 @@
 <br>
 
 <p>
-Lorsque vous lancez l'application, elle vous demandera quelle IA choisir pour le joueur Rouge.<br>
+Lorsque vous lancez l'application, elle vous demandera quelle type d'IA choisir pour le joueur Rouge.<br>
 Chaque IA a son propre comportement.
 
-- Facile : L'IA joue aléatoirement.
+- IA
+  - Facile : L'IA joue aléatoirement.
 
-- Forte : Elle analyse la partie en cours pour jouer les coups qui lui permettront de gagner à coup sûr.
+  - Forte : Elle analyse la partie en cours pour jouer les coups qui lui permettront de gagner à coup sûr.
 
-- Imbattable : Comme l'IA forte, mais beaucoup plus performante et précise dans sa logique d'interprétation de la partie.
+  - Imbattable : Comme l'IA forte, mais beaucoup plus performante et précise dans sa logique d'interprétation de la partie.
 
-- Humain : Vous saisie vous mêmes le coup à jouer lorsque c'est votre tour.
+- Manuel : Vous saisie vous mêmes le coup à jouer lorsque c'est votre tour.
 </p>
 
 <div align="center">
