@@ -70,7 +70,7 @@ Malgré l'optimisation des IA, le coût en performances lié à la profondeur de
 </p>
 
 <p>
-Pour ma part, si je choisis l'IA imbattable avec une profondeur de 15 (maximum), chaque coup prend environ 4 secondes.
+Pour ma part, si je choisis l'IA imbattable avec une profondeur de 15 (maximum), chaque coup prend environ 5 secondes.
 </p>
 
 Voici les spécifications de mon PC :
